@@ -1,0 +1,144 @@
+@model CourseStatsViewModel
+@{
+    ViewData["Title"] = "Thống Kê Đào Tạo";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+    var overallFillRateWidth = Model.OverallFillRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h2 class="fw-extrabold text-dark m-0">Báo Cáo Hoạt Động Kế Toán & Đào Tạo</h2><p class="text-muted m-0">Tổng hợp dữ liệu doanh thu học phí và mật độ phân bổ học viên thực tế.</p></div>
+        <a class="btn app-btn app-btn-ghost fw-bold px-4" asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"><i class="bi bi-arrow-left me-2"></i>Quay lại</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card border-0 shadow-sm rounded-4 p-4 bg-primary text-white position-relative overflow-hidden"><div class="position-absolute end-0 bottom-0 opacity-10" style="font-size: 5rem; transform: translate(10px, 20px);"><i class="bi bi-wallet2"></i></div><span class="text-white-50 text-uppercase small fw-bold tracking-wider">Doanh thu hiện tại</span><h2 class="mt-2 mb-0 fw-bold">@Model.TotalExpectedRevenueText</h2><div class="mt-2 small text-white-50">Tổng số tiền thực thu từ học viên</div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-dark"><span class="text-muted text-uppercase small fw-bold tracking-wider">Tổng số lượt học viên</span><h2 class="mt-2 mb-0 fw-bold text-dark"><span data-countup="@Model.TotalStudents">@Model.TotalStudents</span> <span class="fs-5 fw-normal text-muted">lượt</span></h2><div class="mt-2 small text-success fw-bold"><i class="bi bi-person-fill"></i> Phân bổ trên @Model.TotalCourses lớp học đang mở</div></div></div>
+        <div class="col-md-4"><div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-dark position-relative overflow-hidden"><span class="text-muted text-uppercase small fw-bold tracking-wider">Giảng viên tiêu biểu</span><h2 class="mt-2 mb-0 fw-bold text-primary text-truncate">@Model.TopInstructor</h2><div class="mt-2 small text-muted">Sở hữu lượng học viên đăng ký đông nhất</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6"><div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100"><h5 class="fw-bold text-dark mb-3">Hiệu Suất Lấp Đầy Phòng Học</h5><p class="text-muted small">Tỷ lệ biểu thị phần trăm số ghế đã có học viên đăng ký trên tổng quy mô lớp học của trung tâm.</p><div class="my-4 text-center"><h1 class="display-3 fw-extrabold text-primary m-0" data-countup="@Model.OverallFillRate.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-suffix="%">@Model.OverallFillRate%</h1><span class="text-muted small">Mật độ lấp đầy trung bình</span></div><div class="progress rounded-pill mb-3" style="height: 12px;"><div class="progress-bar bg-gradient bg-primary" style="width: @overallFillRateWidth%"></div></div><div class="card card-body bg-light border-0 rounded-3 mt-auto"><div class="d-flex align-items-center gap-3"><div class="fs-3 text-warning"><i class="bi bi-lightning-charge-fill"></i></div><div class="small text-muted">@if (Model.FullCoursesCount > 0) { <span>Có <strong>@Model.FullCoursesCount lớp đã đầy</strong>. Cần cân nhắc mở thêm lớp mới hoặc tăng sức chứa phòng học.</span> } else { <span>Tốc độ tuyển sinh đang duy trì ổn định, chưa có lớp nào đạt ngưỡng đầy lớp.</span> }</div></div></div></div></div>
+        <div class="col-md-6"><div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100"><h5 class="fw-bold text-dark mb-3">Phân Tích Chỉ Số Trạng Thái Nghiệp Vụ</h5><ul class="list-group list-group-flush small status-metric-list"><li class="list-group-item status-metric-item d-flex justify-content-between align-items-center px-0 py-3"><span class="text-muted">Tổng số lớp học hiện diện</span><span class="fw-bold text-dark fs-6">@Model.TotalCourses lớp</span></li><li class="list-group-item status-metric-item d-flex justify-content-between align-items-center px-0 py-3"><span class="text-muted">Lớp học tuyển sinh đủ chỉ tiêu</span><span class="badge bg-danger rounded-pill px-3 py-2 fw-bold">@Model.FullCoursesCount lớp</span></li><li class="list-group-item status-metric-item d-flex justify-content-between align-items-center px-0 py-3"><span class="text-muted">Lớp học chạm ngưỡng cảnh báo</span><span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold">@Model.PendingCoursesCount lớp</span></li></ul></div></div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <h5 class="fw-bold text-dark mb-1">Doanh Thu Theo Chuyên Ngành</h5>
+                <p class="text-muted small mb-3">Tổng hợp doanh thu thực thu theo từng chuyên ngành.</p>
+                <div style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <h5 class="fw-bold text-dark mb-1">Tỷ Lệ Lấp Đầy (%)</h5>
+                <p class="text-muted small mb-3">So sánh mật độ học viên giữa các chuyên ngành.</p>
+                <div style="position:relative;height:300px;"><canvas id="fillRateChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mt-4 category-stats-card"><div class="d-flex justify-content-between align-items-start gap-3 mb-3"><div><h5 class="fw-bold text-dark mb-1">Thống Kê Theo Danh Mục</h5><p class="text-muted small mb-0">So sánh số lớp, học viên, doanh thu và tỷ lệ lấp đầy theo từng chuyên ngành.</p></div><span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-bold">@Model.CategoryStats.Count nhóm</span></div><div class="row g-3">@foreach (var item in Model.CategoryStats) { var categoryFillRateWidth = item.FillRate.ToString(System.Globalization.CultureInfo.InvariantCulture); <div class="col-md-6 col-xl-4"><div class="category-card h-100 rounded-4 p-3"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="fw-bold text-dark">@item.Category</div><div class="text-muted small">@item.CourseCount lớp - @item.StudentCount/@item.Capacity học viên</div></div><span class="badge bg-light text-dark border rounded-pill">@item.FillRate%</span></div><div class="progress rounded-pill mb-3" style="height: 8px;"><div class="progress-bar bg-primary" style="width: @categoryFillRateWidth%"></div></div><div class="d-flex justify-content-between align-items-center small"><span class="text-muted">Doanh thu</span><span class="fw-bold text-success">@item.RevenueText</span></div></div></div> }</div></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            var isDark = @(currentTheme == "dark" ? "true" : "false");
+            var textColor = isDark ? "#94a3b8" : "#64748b";
+            var gridColor = isDark ? "rgba(148,163,184,.12)" : "rgba(100,116,139,.12)";
+
+            var labels   = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.Category)));
+            var revenues = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.Revenue)));
+            var fillRates = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.FillRate)));
+
+            var palette = ["#2563eb", "#06b6d4", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"];
+
+            new Chart(document.getElementById("revenueChart"), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Doanh thu (VNĐ)",
+                        data: revenues,
+                        backgroundColor: palette,
+                        borderRadius: 8,
+                        maxBarThickness: 64
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ctx.parsed.y.toLocaleString("vi-VN") + " đ";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: textColor }, grid: { display: false } },
+                        y: {
+                            ticks: {
+                                color: textColor,
+                                callback: function (v) { return (v / 1000000).toLocaleString("vi-VN") + " tr"; }
+                            },
+                            grid: { color: gridColor }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById("fillRateChart"), {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: fillRates,
+                        backgroundColor: palette,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "62%",
+                    plugins: {
+                        legend: { position: "bottom", labels: { color: textColor, usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) { return ctx.label + ": " + ctx.parsed + "%"; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Count-up animation cho các con số lớn
+            document.querySelectorAll("[data-countup]").forEach(function (el) {
+                var target = parseFloat(el.getAttribute("data-countup"));
+                var suffix = el.getAttribute("data-suffix") || "";
+                var decimals = target % 1 !== 0 ? 1 : 0;
+                var duration = 900, start = null;
+                function step(ts) {
+                    if (!start) start = ts;
+                    var p = Math.min((ts - start) / duration, 1);
+                    var eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = (target * eased).toFixed(decimals) + suffix;
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                    el.textContent = target.toFixed(decimals) + suffix;
+                } else {
+                    requestAnimationFrame(step);
+                }
+            });
+        })();
+    </script>
+}

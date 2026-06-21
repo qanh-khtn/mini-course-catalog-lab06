@@ -1,0 +1,123 @@
+@model List<CourseCategoryViewModel>
+@{
+    ViewData["Title"] = "Chuyên Ngành";
+    var theme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="py-2">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">Danh Mục Chuyên Ngành</h1>
+            <p class="page-description">Danh sách các chuyên ngành và số lượng khóa học thuộc mỗi chuyên ngành.</p>
+        </div>
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@theme" class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Khóa học
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center empty-state">
+            <i class="bi bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-3">Chưa có danh mục nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4 mb-4">
+            @foreach (var cat in Model)
+            {
+                <div class="col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 p-4 category-card">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-2 bg-primary bg-opacity-10">
+                                <i class="bi bi-mortarboard-fill text-primary fs-5"></i>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">1 – Many</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">@cat.Name</h5>
+                        <p class="text-muted small mb-3">@cat.Description</p>
+                        <div class="d-flex gap-3 mb-3">
+                            <div class="text-center">
+                                <div class="fw-extrabold text-primary fs-5">@cat.CourseCount</div>
+                                <div class="text-muted" style="font-size: .72rem;">Khóa học</div>
+                            </div>
+                            <div class="vr opacity-25"></div>
+                            <div class="text-center">
+                                <div class="fw-extrabold text-success fs-5">@cat.TotalEnrollment</div>
+                                <div class="text-muted" style="font-size: .72rem;">Đăng ký</div>
+                            </div>
+                            <div class="vr opacity-25"></div>
+                            <div class="text-center">
+                                <div class="fw-extrabold text-secondary fs-5">@cat.TotalCapacity</div>
+                                <div class="text-muted" style="font-size: .72rem;">Sức chứa</div>
+                            </div>
+                        </div>
+                        @if (cat.Courses.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-1 mt-auto">
+                                @foreach (var c in cat.Courses)
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2">@c.Code</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted small mt-auto">Chưa có khóa học</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2" style="background: transparent;">
+                <i class="bi bi-table text-primary"></i>
+                <span class="fw-bold">Chi tiết quan hệ One-to-Many</span>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 ms-auto">@Model.Count nhóm</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Chuyên ngành</th>
+                            <th>Mô tả</th>
+                            <th>Mã khóa học</th>
+                            <th>DbSet</th>
+                            <th class="pe-4 text-end">Sĩ số / Sức chứa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cat in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">@cat.Name</td>
+                                <td class="text-muted small">@cat.Description</td>
+                                <td>
+                                    @if (cat.Courses.Any())
+                                    {
+                                        @foreach (var c in cat.Courses)
+                                        {
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1">@c.Code</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Chưa có</span>
+                                    }
+                                </td>
+                                <td><code class="small">CourseCategories</code></td>
+                                <td class="pe-4 text-end">
+                                    <span class="fw-bold">@cat.TotalEnrollment</span>
+                                    <span class="text-muted">/ @cat.TotalCapacity</span>
+                                    <span class="badge bg-light text-muted border rounded-pill ms-1 small">@cat.CourseCount khóa</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,65 @@
+@model CourseDeleteViewModel
+
+@{
+    ViewData["Title"] = "Xóa Khóa Học";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Xác Nhận Xóa Khóa Học</h2>
+            <p class="page-description">Khóa học sẽ được chuyển vào thùng rác và có thể khôi phục lại sau.</p>
+        </div>
+
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-4">
+        <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <span>Bạn có chắc muốn ngưng tuyển sinh / xóa mềm khóa học dưới đây?</span>
+        </div>
+
+        <dl class="row mb-4">
+            <dt class="col-sm-3">Mã khóa học</dt>
+            <dd class="col-sm-9 fw-bold text-primary">@Model.Code</dd>
+
+            <dt class="col-sm-3">Tên khóa học</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Chuyên ngành</dt>
+            <dd class="col-sm-9">@Model.Category</dd>
+
+            <dt class="col-sm-3">Giảng viên</dt>
+            <dd class="col-sm-9">@Model.Instructor</dd>
+
+            <dt class="col-sm-3">Học phí</dt>
+            <dd class="col-sm-9">@Model.TuitionFeeText</dd>
+
+            <dt class="col-sm-3">Sĩ số</dt>
+            <dd class="col-sm-9">@Model.EnrollmentStatus</dd>
+
+            <dt class="col-sm-3">Ngày khai giảng</dt>
+            <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
+        </dl>
+
+        <form asp-controller="Courses" asp-action="Delete" asp-route-theme="@currentTheme" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-danger fw-bold px-4">
+                    <i class="bi bi-trash me-2"></i>Xóa khóa học
+                </button>
+                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+                   class="btn app-btn app-btn-ghost fw-bold px-4">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

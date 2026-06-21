@@ -1,0 +1,64 @@
+@model CourseAdjustSeatsViewModel
+
+@{
+    ViewData["Title"] = "Điều Chỉnh Sĩ Số";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Điều Chỉnh Sĩ Số</h2>
+            <p class="page-description">Cập nhật nhanh sĩ số lớp học. Hệ thống tự động xử lý xung đột nếu có người khác đang chỉnh cùng lúc.</p>
+        </div>
+
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-4 create-course-card">
+        <div class="mb-4">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-bold">@Model.Code</span>
+            <h5 class="fw-bold mt-2 mb-1">@Model.Name</h5>
+            <p class="text-muted mb-0">Sĩ số hiện tại: <strong>@Model.EnrollmentStatus</strong> (sức chứa tối đa @Model.MaxCapacity)</p>
+        </div>
+
+        <form asp-controller="Courses" asp-action="AdjustSeats" asp-route-id="@Model.Id" asp-route-theme="@currentTheme" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="RowVersion" />
+            <input type="hidden" asp-for="MaxCapacity" />
+            <input type="hidden" asp-for="CurrentEnrollment" />
+            <input type="hidden" asp-for="Code" />
+            <input type="hidden" asp-for="Name" />
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label asp-for="NewEnrollment" class="form-label fw-bold"></label>
+                    <input asp-for="NewEnrollment" type="number" min="0" max="@Model.MaxCapacity"
+                           class="form-control form-control-lg search-input" />
+                    <span asp-validation-for="NewEnrollment" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4">
+                    <i class="bi bi-check-circle me-2"></i>Cập nhật sĩ số
+                </button>
+                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+                   class="btn app-btn app-btn-ghost fw-bold px-4">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

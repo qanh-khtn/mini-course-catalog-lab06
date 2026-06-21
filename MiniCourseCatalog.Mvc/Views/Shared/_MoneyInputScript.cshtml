@@ -1,0 +1,34 @@
+@*
+    Ô hiển thị học phí có dấu phẩy ngăn cách nghìn (VD: 2,000,000).
+    #TuitionFeeDisplay: ô text user nhìn/gõ; input[name=TuitionFee] (hidden): số thuần để model binding.
+*@
+<script>
+    (function () {
+        function init() {
+            var display = document.getElementById('TuitionFeeDisplay');
+            var hidden = document.querySelector('input[name="TuitionFee"]');
+            if (!display || !hidden) return;
+
+            function format(digits) {
+                return digits ? Number(digits).toLocaleString('en-US') : '';
+            }
+
+            // Khởi tạo từ giá trị model (cắt bỏ phần thập phân .00 nếu có)
+            var initial = (hidden.value || '').replace(/[.,]\d{1,2}$/, '').replace(/[^\d]/g, '');
+            hidden.value = initial;
+            display.value = format(initial);
+
+            display.addEventListener('input', function () {
+                var digits = display.value.replace(/[^\d]/g, '');
+                hidden.value = digits;
+                display.value = format(digits);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+</script>

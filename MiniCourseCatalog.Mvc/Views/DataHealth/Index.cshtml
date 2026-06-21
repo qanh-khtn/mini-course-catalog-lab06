@@ -1,0 +1,173 @@
+@model DataHealthViewModel
+@{
+    ViewData["Title"] = "DB Health";
+    var theme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="py-2">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">EF Core Data Health</h1>
+            <p class="page-description">Kiểm tra trạng thái Migration, Seed Data, AsNoTracking và Transaction.</p>
+        </div>
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@theme" class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Khóa học
+        </a>
+    </div>
+
+    @if (!Model.CanConnect)
+    {
+        <div class="card shadow-sm rounded-4 border-0 p-4 mb-4" style="border-left: 4px solid #ef4444 !important;">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-x-circle-fill text-danger fs-3"></i>
+                <div>
+                    <div class="fw-bold text-danger">Kết nối thất bại</div>
+                    <small class="text-muted">@Model.DbError</small>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 p-2 bg-success bg-opacity-10">
+                            <i class="bi bi-database-check text-success fs-5"></i>
+                        </div>
+                        <span class="text-muted small fw-medium">Kết nối</span>
+                    </div>
+                    <div class="fw-bold text-success">Thành công</div>
+                    <small class="text-muted fw-mono mt-1 d-block text-truncate">@Model.DatabasePath</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 p-2 bg-primary bg-opacity-10">
+                            <i class="bi bi-stack text-primary fs-5"></i>
+                        </div>
+                        <span class="text-muted small fw-medium">Migration</span>
+                    </div>
+                    <div class="fw-bold text-dark small fw-mono text-truncate">@Model.LastMigration</div>
+                    <small class="text-success mt-1"><i class="bi bi-check-circle-fill me-1"></i>Đã áp dụng</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 p-2 bg-info bg-opacity-10">
+                            <i class="bi bi-diagram-3 text-info fs-5"></i>
+                        </div>
+                        <span class="text-muted small fw-medium">Seed Data</span>
+                    </div>
+                    <div class="fw-bold text-dark">@Model.CourseCategoryCount danh mục · @Model.CourseCount khóa</div>
+                    <small class="text-muted mt-1">@Model.StudentCount học viên · @Model.EnrollmentCount đăng ký</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 p-2 bg-warning bg-opacity-10">
+                            <i class="bi bi-arrow-repeat text-warning fs-5"></i>
+                        </div>
+                        <span class="text-muted small fw-medium">Transaction</span>
+                    </div>
+                    <div class="fw-bold text-dark">Commit / Rollback</div>
+                    <small class="text-success mt-1"><i class="bi bi-check-circle-fill me-1"></i>EnrollmentService</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2" style="background: transparent;">
+                <i class="bi bi-clipboard2-check text-primary"></i>
+                <span class="fw-bold">Bảng kiểm tra EF Core</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Kiểm tra</th>
+                            <th>Kỳ vọng</th>
+                            <th>Thực tế</th>
+                            <th>Trạng thái</th>
+                            <th class="pe-4">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-stack me-2 text-primary"></i>Migration</td>
+                            <td class="text-muted">Đã áp dụng</td>
+                            <td><code class="small">@Model.LastMigration</code></td>
+                            <td><span class="badge bg-success rounded-pill px-3">OK</span></td>
+                            <td class="pe-4 text-muted small">2 migrations: InitialCreate + SeedInitialData</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-diagram-3 me-2 text-info"></i>Seed — CourseCategories</td>
+                            <td class="text-muted">≥ 2 danh mục</td>
+                            <td class="fw-bold">@Model.CourseCategoryCount danh mục</td>
+                            <td><span class="badge @(Model.CourseCategoryCount >= 2 ? "bg-success" : "bg-danger") rounded-pill px-3">@(Model.CourseCategoryCount >= 2 ? "OK" : "Thiếu")</span></td>
+                            <td class="pe-4 text-muted small">SeedInitialData migration</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-book me-2 text-success"></i>Seed — Courses</td>
+                            <td class="text-muted">≥ 2 khóa học</td>
+                            <td class="fw-bold">@Model.CourseCount khóa học</td>
+                            <td><span class="badge @(Model.CourseCount >= 2 ? "bg-success" : "bg-danger") rounded-pill px-3">@(Model.CourseCount >= 2 ? "OK" : "Thiếu")</span></td>
+                            <td class="pe-4 text-muted small">SeedInitialData migration</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-people me-2 text-purple"></i>Seed — Students</td>
+                            <td class="text-muted">≥ 1 học viên</td>
+                            <td class="fw-bold">@Model.StudentCount học viên</td>
+                            <td><span class="badge @(Model.StudentCount >= 1 ? "bg-success" : "bg-danger") rounded-pill px-3">@(Model.StudentCount >= 1 ? "OK" : "Thiếu")</span></td>
+                            <td class="pe-4 text-muted small">SeedInitialData migration</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-journal-check me-2 text-secondary"></i>Enrollments</td>
+                            <td class="text-muted">Đọc được</td>
+                            <td class="fw-bold">@Model.EnrollmentCount lượt đăng ký</td>
+                            <td><span class="badge bg-success rounded-pill px-3">OK</span></td>
+                            <td class="pe-4 text-muted small">IEnrollmentRepository</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-eye me-2 text-cyan"></i>No-Tracking</td>
+                            <td class="text-muted">Danh sách chỉ đọc</td>
+                            <td><code>.AsNoTracking()</code></td>
+                            <td><span class="badge bg-success rounded-pill px-3">OK</span></td>
+                            <td class="pe-4 text-muted small">CourseRepository.GetAllReadOnlyAsync</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-pencil-square me-2 text-warning"></i>Tracking</td>
+                            <td class="text-muted">Nghiệp vụ cập nhật</td>
+                            <td>Tracked query</td>
+                            <td><span class="badge bg-success rounded-pill px-3">OK</span></td>
+                            <td class="pe-4 text-muted small">EnrollmentService.EnrollStudentAsync</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-medium"><i class="bi bi-arrow-repeat me-2 text-danger"></i>Transaction</td>
+                            <td class="text-muted">Đăng ký khóa học</td>
+                            <td>Commit / Rollback</td>
+                            <td><span class="badge bg-success rounded-pill px-3">OK</span></td>
+                            <td class="pe-4 text-muted small">BeginTransactionAsync → CommitAsync</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
+                <i class="bi bi-person-plus me-2"></i>Thử Transaction (Enroll)
+            </a>
+            <a asp-controller="CourseCategories" asp-action="Index" class="btn app-btn app-btn-ghost fw-bold px-4">
+                <i class="bi bi-diagram-3 me-2"></i>Xem Relationship
+            </a>
+            <a asp-controller="Enrollments" asp-action="History" class="btn app-btn app-btn-ghost fw-bold px-4">
+                <i class="bi bi-clock-history me-2"></i>Lịch sử đăng ký
+            </a>
+        </div>
+    }
+</div>

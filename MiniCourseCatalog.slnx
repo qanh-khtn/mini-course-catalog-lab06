@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MiniCourseCatalog.Mvc/MiniCourseCatalog.Mvc.csproj" />
+  <Project Path="MiniCourseCatalog.Tests/MiniCourseCatalog.Tests.csproj" />
+</Solution>

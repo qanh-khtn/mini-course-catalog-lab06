@@ -1,0 +1,137 @@
+@model CourseDetailViewModel
+@{
+    ViewData["Title"] = "Chi Tiết Khóa Học";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+
+    var statusClass = (Model.CurrentEnrollment >= Model.MaxCapacity)          ? "badge bg-danger" :
+                      (Model.MaxCapacity - Model.CurrentEnrollment <= 3)       ? "badge bg-warning text-dark" :
+                      (Model.CurrentEnrollment < 10)                           ? "badge bg-secondary" :
+                                                                                 "badge bg-success";
+}
+
+<div class="py-2">
+    <div class="page-header mb-4">
+        <div>
+            <div class="text-muted small mb-1 fw-mono">@Model.Code</div>
+            <h1 class="page-title">@Model.Name</h1>
+            <p class="page-description">@Model.Category</p>
+        </div>
+        <a class="btn app-btn app-btn-ghost fw-bold px-4"
+           asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h6 class="fw-bold text-muted text-uppercase mb-3" style="letter-spacing:.05em;font-size:.75rem;">
+                    <i class="bi bi-info-circle me-2"></i>Thông tin lớp học
+                </h6>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Mã khóa học</div>
+                        <div class="fw-bold text-primary fs-5 fw-mono">@Model.Code</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Mã hệ thống</div>
+                        <div class="fw-bold text-dark">#@Model.Id</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Giảng viên phụ trách</div>
+                        <div class="fw-bold text-dark"><i class="bi bi-person-fill text-muted me-1"></i>@Model.Instructor</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Chuyên ngành</div>
+                        <div class="fw-bold">
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3">@Model.Category</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Ngày khai giảng</div>
+                        <div class="fw-bold text-dark"><i class="bi bi-calendar3 text-muted me-1"></i>@Model.StartDateText</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Trạng thái</div>
+                        <div class="mt-1">
+                            <span class="@statusClass px-3 py-1 rounded-pill small">@Model.CourseStatus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold text-muted text-uppercase mb-3" style="letter-spacing:.05em;font-size:.75rem;">
+                    <i class="bi bi-people me-2"></i>Tuyển sinh & Học phí
+                </h6>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="stat-card">
+                            <div class="stat-number text-primary">@Model.CurrentEnrollment</div>
+                            <div class="stat-label">Học viên hiện tại</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="stat-card">
+                            <div class="stat-number text-secondary">@Model.MaxCapacity</div>
+                            <div class="stat-label">Sức chứa tối đa</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color:#10b981;">@Model.MaxCapacity - @Model.CurrentEnrollment</div>
+                            <div class="stat-label">Còn trống</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    @{
+                        var fillPct = Model.MaxCapacity > 0 ? (int)Math.Round((double)Model.CurrentEnrollment / Model.MaxCapacity * 100) : 0;
+                        var barColor = fillPct >= 100 ? "bg-danger" : fillPct >= 80 ? "bg-warning" : "bg-primary";
+                    }
+                    <div class="d-flex justify-content-between mb-1 small text-muted">
+                        <span>Tỷ lệ lấp đầy</span>
+                        <span class="fw-bold">@fillPct%</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height:10px;">
+                        <div class="progress-bar @barColor" style="width:@(fillPct.ToString(System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 side-card success">
+                <div class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing:.05em;font-size:.72rem;">
+                    <i class="bi bi-cash-coin me-1"></i>Học phí / suất
+                </div>
+                <div class="fw-extrabold" style="font-size:1.6rem;color:#059669;">@Model.TuitionFeeText</div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 side-card info">
+                <div class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing:.05em;font-size:.72rem;">
+                    <i class="bi bi-wallet2 me-1"></i>Doanh thu hiện tại
+                </div>
+                <div class="fw-extrabold text-primary" style="font-size:1.6rem;">@Model.TotalRevenueText</div>
+                <div class="text-muted small mt-1">Dựa trên @Model.CurrentEnrollment học viên × @Model.TuitionFeeText</div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 side-card warning">
+                <div class="text-muted small text-uppercase fw-bold mb-2" style="letter-spacing:.05em;font-size:.72rem;">
+                    <i class="bi bi-lightbulb me-1"></i>Gợi ý vận hành
+                </div>
+                <div class="small text-dark">@Model.OperationalSuggestion</div>
+            </div>
+
+            <div class="mt-3 d-flex flex-column gap-2">
+                <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
+                    <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
+                </a>
+                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme" class="btn app-btn app-btn-ghost fw-bold px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Về danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

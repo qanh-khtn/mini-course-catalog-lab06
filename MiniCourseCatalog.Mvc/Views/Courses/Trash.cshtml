@@ -1,0 +1,132 @@
+@model List<CourseTrashItemViewModel>
+
+@{
+    ViewData["Title"] = "Thùng Rác Khóa Học";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+@* Modal xác nhận xóa vĩnh viễn *@
+<div class="modal fade" id="hardDeleteModal" tabindex="-1" aria-labelledby="hardDeleteModalLabel" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" style="max-width:440px;">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0 pt-3 px-4">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center"
+                         style="width:40px;height:40px;flex-shrink:0;">
+                        <i class="bi bi-trash3-fill text-danger"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold mb-0" id="hardDeleteModalLabel">Xóa vĩnh viễn khóa học?</h5>
+                </div>
+            </div>
+            <div class="modal-body px-4 pt-3 pb-2">
+                <p class="mb-2 text-muted">Khóa học sắp bị xóa:</p>
+                <div class="fw-bold text-danger bg-danger bg-opacity-10 rounded-3 px-3 py-2 mb-3"
+                     id="hardDeleteCourseName"></div>
+                <div class="d-flex align-items-start gap-2 bg-warning bg-opacity-10 rounded-3 px-3 py-2">
+                    <i class="bi bi-exclamation-triangle-fill text-warning mt-1" style="flex-shrink:0;"></i>
+                    <span class="small">Hành động này <strong>không thể hoàn tác</strong>. Dữ liệu sẽ bị xóa hoàn toàn khỏi hệ thống.</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-2 px-4 pb-4 gap-2">
+                <button type="button" class="btn btn-outline-secondary fw-semibold px-4" data-bs-dismiss="modal">
+                    Hủy bỏ
+                </button>
+                <form id="hardDeleteForm" method="post" class="d-inline"
+                      asp-controller="Courses" asp-action="HardDelete" asp-route-theme="@currentTheme">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="hardDeleteId" name="id" value="" />
+                    <button type="submit" class="btn btn-danger fw-bold px-4">
+                        <i class="bi bi-trash3-fill me-1"></i>Xóa vĩnh viễn
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Thùng Rác — Khóa Học Đã Ngưng Tuyển Sinh</h2>
+            <p class="page-description">Các khóa học đã bị xóa. Bạn có thể khôi phục hoặc xóa vĩnh viễn từ đây.</p>
+        </div>
+
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Danh sách hoạt động
+        </a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state text-center p-5 rounded-4">
+            <div class="display-6 fw-bold mb-2">Thùng rác trống</div>
+            <p class="text-muted mb-0">Chưa có khóa học nào bị xóa mềm.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm rounded-4 p-0 overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên khóa học</th>
+                        <th>Chuyên ngành</th>
+                        <th>Thời điểm xóa</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-primary">@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>@item.Category</td>
+                            <td>@item.DeletedAtText</td>
+                            <td class="text-end">
+                                <form asp-controller="Courses" asp-action="Restore"
+                                      asp-route-theme="@currentTheme" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Khôi phục
+                                    </button>
+                                </form>
+                                <button type="button"
+                                        class="btn btn-danger btn-sm fw-bold ms-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#hardDeleteModal"
+                                        data-course-id="@item.Id"
+                                        data-course-name="@item.Name">
+                                    <i class="bi bi-trash3-fill me-1"></i>Xóa vĩnh viễn
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var modal = document.getElementById('hardDeleteModal');
+            // Dời modal ra thẳng <body> để thoát khỏi stacking context của
+            // <main class="page-fade-in"> — nếu không, lớp nền mờ (gắn ở body)
+            // sẽ đè lên trên modal khiến không bấm được nút.
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.addEventListener('show.bs.modal', function (e) {
+                var btn = e.relatedTarget;
+                document.getElementById('hardDeleteCourseName').textContent = btn.dataset.courseName;
+                document.getElementById('hardDeleteId').value = btn.dataset.courseId;
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Trang Chủ";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="lab-hero">
+    <div class="mb-3">
+        <span class="badge badge-hero rounded-pill px-3 py-2 fw-bold">
+            <i class="bi bi-mortarboard-fill me-1"></i> ASP.NET Core MVC · EF Core · Lab 04
+        </span>
+    </div>
+    <h1 class="text-gradient">
+        Mini Training Center
+    </h1>
+    <p>Hệ thống quản lý nội bộ Trung tâm Đào tạo.<br />Xem danh sách khóa học, tuyển sinh và doanh thu dự kiến.</p>
+    <a class="btn app-btn app-btn-primary btn-lg px-5 py-3 fw-bold mt-2"
+       href="/Courses?theme=@currentTheme">
+        <i class="bi bi-grid-1x2-fill me-2"></i>Xem Khóa Học
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
+                <div class="rounded-3 p-2 bg-primary bg-opacity-10 mb-3 d-inline-flex">
+                    <i class="bi bi-journal-richtext text-primary fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark mb-1">Khóa Học</div>
+                <div class="text-muted small">Danh sách lớp học, sĩ số và học phí</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="Courses" asp-action="Stats" asp-route-theme="@currentTheme" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
+                <div class="rounded-3 p-2 bg-success bg-opacity-10 mb-3 d-inline-flex">
+                    <i class="bi bi-bar-chart-fill text-success fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark mb-1">Thống Kê</div>
+                <div class="text-muted small">Doanh thu, tỷ lệ lấp đầy và báo cáo</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="CourseCategories" asp-action="Index" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
+                <div class="rounded-3 p-2 bg-info bg-opacity-10 mb-3 d-inline-flex">
+                    <i class="bi bi-diagram-3 text-info fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark mb-1">Chuyên Ngành</div>
+                <div class="text-muted small">Quan hệ One-to-Many CourseCategory</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a asp-controller="DataHealth" asp-action="Index" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
+                <div class="rounded-3 p-2 bg-warning bg-opacity-10 mb-3 d-inline-flex">
+                    <i class="bi bi-database-check text-warning fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark mb-1">DB Health</div>
+                <div class="text-muted small">Migration, Seed Data, Transaction</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="info-panel">
+    <h5 class="fw-bold mb-3"><i class="bi bi-diagram-2-fill text-primary me-2"></i>Luồng xử lý MVC</h5>
+    <ol class="flow-list mb-0">
+        <li><strong>Controller</strong> tiếp nhận HTTP request từ trình duyệt</li>
+        <li><strong>Service</strong> xử lý nghiệp vụ, gọi <strong>Repository</strong> để truy vấn EF Core</li>
+        <li><strong>ViewModel</strong> đóng gói dữ liệu trả về View</li>
+        <li><strong>Razor View</strong> render HTML và phản hồi về trình duyệt</li>
+    </ol>
+</div>

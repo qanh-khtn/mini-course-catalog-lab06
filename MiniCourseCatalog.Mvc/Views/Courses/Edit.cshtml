@@ -1,0 +1,100 @@
+@model CourseEditViewModel
+
+@{
+    ViewData["Title"] = "Sửa Khóa Học";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Sửa Khóa Học</h2>
+            <p class="page-description">Cập nhật thông tin lớp học. Hệ thống tự động xử lý xung đột nếu có người khác đang sửa cùng lúc.</p>
+        </div>
+
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-4 create-course-card">
+        <form asp-controller="Courses" asp-action="Edit" asp-route-theme="@currentTheme" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="RowVersion" />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Code" class="form-label fw-bold"></label>
+                    <input asp-for="Code" class="form-control search-input" />
+                    <span asp-validation-for="Code" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="Name" class="form-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control search-input" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="CourseCategoryId" class="form-label fw-bold"></label>
+                    <select asp-for="CourseCategoryId" asp-items="Model.CategoryOptions" class="form-select search-input">
+                        <option value="0">-- Chọn chuyên ngành --</option>
+                    </select>
+                    <span asp-validation-for="CourseCategoryId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Instructor" class="form-label fw-bold"></label>
+                    <input asp-for="Instructor" class="form-control search-input" />
+                    <span asp-validation-for="Instructor" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="TuitionFee" class="form-label fw-bold"></label>
+                    <input type="text" id="TuitionFeeDisplay" class="form-control search-input"
+                           inputmode="numeric" autocomplete="off" placeholder="VD: 2,500,000" />
+                    <input asp-for="TuitionFee" type="hidden" />
+                    <span asp-validation-for="TuitionFee" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="CurrentEnrollment" class="form-label fw-bold"></label>
+                    <input asp-for="CurrentEnrollment" class="form-control search-input" />
+                    <span asp-validation-for="CurrentEnrollment" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaxCapacity" class="form-label fw-bold"></label>
+                    <input asp-for="MaxCapacity" class="form-control search-input" />
+                    <span asp-validation-for="MaxCapacity" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="StartDate" class="form-label fw-bold"></label>
+                    <input asp-for="StartDate" class="form-control search-input" />
+                    <span asp-validation-for="StartDate" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4">
+                    <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
+                </button>
+                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+                   class="btn app-btn app-btn-ghost fw-bold px-4">
+                    <i class="bi bi-x-circle me-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_MoneyInputScript" />
+}

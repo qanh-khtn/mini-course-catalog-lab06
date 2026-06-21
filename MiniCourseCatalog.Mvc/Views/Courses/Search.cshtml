@@ -1,0 +1,85 @@
+@model CourseSearchViewModel
+
+@{
+    ViewData["Title"] = "Tìm Kiếm Khóa Học";
+    var currentTheme = Model.Theme;
+}
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Tìm Kiếm Khóa Học</h2>
+            <p class="page-description">Tìm khóa học theo mã lớp, tên khóa học, giảng viên hoặc chuyên ngành.</p>
+        </div>
+
+        <a asp-controller="Courses"
+           asp-action="Index"
+           asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-4">
+            <div class="card filter-panel shadow-sm rounded-4 sticky-lg-top search-side-panel">
+                <div class="card-body p-3 p-md-4">
+                    <h5 class="fw-bold mb-3">Bộ lọc tìm kiếm</h5>
+
+                    <form asp-controller="Courses"
+                          asp-action="Search"
+                          method="get"
+                          class="d-grid gap-3">
+
+                        <input type="hidden" name="theme" value="@currentTheme" />
+
+                        <div>
+                            <label class="form-label small fw-bold text-uppercase text-muted">Từ khóa</label>
+                            <input class="form-control form-control-lg search-input"
+                                   name="keyword"
+                                   value="@Model.Keyword"
+                                   placeholder="Tên khóa học, mã lớp, giảng viên..." />
+                        </div>
+
+                        <div>
+                            <label class="form-label small fw-bold text-uppercase text-muted">Chuyên ngành</label>
+                            <select class="form-select form-select-lg search-input" name="category">
+                                <option value="">Tất cả chuyên ngành</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category" selected="@(Model.Category == category)">
+                                        @category
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn app-btn app-btn-primary flex-fill fw-bold" type="submit">
+                                <i class="bi bi-search me-2"></i>Tìm
+                            </button>
+
+                            <a asp-controller="Courses"
+                               asp-action="Search"
+                               asp-route-theme="@currentTheme"
+                               class="btn app-btn app-btn-ghost fw-bold">
+                                Xóa
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Kết quả tìm kiếm</h5>
+                    <p class="text-muted mb-0">Tìm thấy @Model.Results.Count khóa học phù hợp.</p>
+                </div>
+            </div>
+
+            <partial name="~/Views/Shared/_CourseSearchResultList.cshtml" model="Model.Results" />
+        </div>
+    </div>
+</div>

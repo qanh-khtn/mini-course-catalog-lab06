@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mini Training Center — Hệ thống quản lý khóa học nội bộ" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#2563eb" />
+    <title>@ViewData["Title"] - Mini Training Center</title>
+
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MiniCourseCatalog.Mvc.styles.css" asp-append-version="true" />
+</head>
+
+@{
+    // Theme is set by ThemeFilter (reads cookie + query param). Just read from ViewData.
+    var theme      = ViewData["Theme"]?.ToString() == "dark" ? "dark" : "light";
+    var bodyClass  = theme == "dark" ? "theme-dark" : "theme-light";
+    var nextTheme  = theme == "light" ? "dark" : "light";
+    var themeTitle = theme == "light" ? "Giao diện Tối" : "Giao diện Sáng";
+
+    var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString()    ?? "";
+
+    Func<string, string, bool> IsActive =
+        (c, a) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(action, a, StringComparison.OrdinalIgnoreCase);
+
+    Func<string, string, string> NavCls =
+        (c, a) => "nav-link text-uppercase small " + (IsActive(c, a) ? "active fw-bold" : "fw-medium");
+}
+
+<body class="@bodyClass">
+    <header>
+        <nav class="navbar navbar-expand-sm app-navbar sticky-top mb-4">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand fw-extrabold"
+                   asp-controller="Home" asp-action="Index" asp-route-theme="@theme">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Mini Training Center
+                </a>
+
+                <button class="navbar-toggler border-0 shadow-none" type="button"
+                        data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false"
+                        aria-label="Mở menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-flex align-items-center justify-content-between">
+                    <ul class="navbar-nav flex-grow-1 ms-sm-2">
+                        <li class="nav-item">
+                            <a class="@NavCls("Home","Index")"
+                               asp-controller="Home" asp-action="Index" asp-route-theme="@theme">
+                                Trang chủ
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","Index")"
+                               asp-controller="Courses" asp-action="Index" asp-route-theme="@theme">
+                                Khóa học
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","Stats")"
+                               asp-controller="Courses" asp-action="Stats" asp-route-theme="@theme">
+                                Thống kê
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","Search")"
+                               asp-controller="Courses" asp-action="Search" asp-route-theme="@theme">
+                                Tìm kiếm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","Filter")"
+                               asp-controller="Courses" asp-action="Filter" asp-route-theme="@theme">
+                                Lọc
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","Enroll")"
+                               asp-controller="Courses" asp-action="Enroll" asp-route-theme="@theme">
+                                Đăng ký
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="@NavCls("Courses","AuditLog")"
+                               asp-controller="Courses" asp-action="AuditLog" asp-route-theme="@theme">
+                                Audit Log
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-uppercase small fw-medium dropdown-toggle @(ctrl is "CourseCategories" or "DataHealth" or "Enrollments" ? "active fw-bold" : "")"
+                               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Quản trị
+                            </a>
+                            <ul class="dropdown-menu rounded-3 shadow-sm border-0 mt-2">
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="CourseCategories" asp-action="Index" asp-route-theme="@theme">
+                                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Chuyên ngành
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="Enrollments" asp-action="History" asp-route-theme="@theme">
+                                        <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử đăng ký
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Trash" asp-route-theme="@theme">
+                                        <i class="bi bi-trash me-2 text-primary"></i>Thùng rác
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item small" href="/health/ready" target="_blank">
+                                        <i class="bi bi-heart-pulse me-2 text-primary"></i>Health Check
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item small" href="/api/courses/9999" target="_blank">
+                                        <i class="bi bi-braces me-2 text-primary"></i>API Error Demo
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="DataHealth" asp-action="Index" asp-route-theme="@theme">
+                                        <i class="bi bi-database-check me-2 text-primary"></i>DB Health
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item ms-sm-2">
+                            <a class="nav-link nav-cta"
+                               asp-controller="Courses" asp-action="Create" asp-route-theme="@theme">
+                                <i class="bi bi-plus-lg me-1"></i>Thêm mới
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="navbar-theme-toggle ms-sm-3 mt-3 mt-sm-0">
+                        <a href="?theme=@nextTheme"
+                           class="modern-theme-switch shadow-sm"
+                           title="@themeTitle"
+                           aria-label="@themeTitle"
+                           data-theme-toggle
+                           data-next-theme="@nextTheme">
+                            <span class="switch-track @(theme == "dark" ? "track-dark" : "track-light")">
+                                <span class="switch-symbol switch-symbol-sun"></span>
+                                <span class="switch-symbol switch-symbol-moon"></span>
+                                <span class="switch-thumb @(theme == "dark" ? "thumb-dark" : "thumb-light")">
+                                    <span class="switch-thumb-icon"></span>
+                                </span>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-4 page-fade-in">
+            @RenderBody()
+        </main>
+    </div>
+
+    @* Toast thông báo nổi góc phải — thay cho alert chiếm chỗ trong trang *@
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="toast app-toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true"
+                 data-bs-delay="4500" data-app-toast>
+                <div class="d-flex">
+                    <div class="toast-body fw-medium">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["SuccessMessage"]
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="toast app-toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true"
+                 data-bs-delay="5000" data-app-toast>
+                <div class="d-flex">
+                    <div class="toast-body fw-medium">
+                        <i class="bi bi-x-circle-fill text-danger me-2"></i>@TempData["ErrorMessage"]
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <footer class="border-top mt-2 py-3 app-footer">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span class="small text-muted">
+                <i class="bi bi-mortarboard me-1 text-primary"></i>
+                &copy; 2026 Mini Training Center
+            </span>
+            <a class="small text-muted text-decoration-none"
+               asp-controller="Home" asp-action="Privacy" asp-route-theme="@theme">
+                Quyền riêng tư
+            </a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Auto-dismiss alerts after 4s
+        setTimeout(function () {
+            document.querySelectorAll(".alert.auto-dismiss").forEach(function (el) {
+                el.classList.remove("show");
+                setTimeout(function () { el.remove(); }, 500);
+            });
+        }, 4000);
+
+        // Smooth theme animation on toggle click
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (el) {
+            el.addEventListener("click", function () {
+                document.body.classList.add("theme-animating");
+            });
+        });
+
+        // Show toasts
+        document.querySelectorAll("[data-app-toast]").forEach(function (el) {
+            bootstrap.Toast.getOrCreateInstance(el).show();
+        });
+
+        // Scroll reveal: card xuất hiện lần lượt khi cuộn tới
+        (function () {
+            var cards = document.querySelectorAll(".course-card, .stat-card, .category-card");
+            if (!("IntersectionObserver" in window)) return;
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add("revealed");
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: .1 });
+            cards.forEach(function (el, i) {
+                el.classList.add("reveal");
+                el.style.setProperty("--reveal-i", i % 6);
+                io.observe(el);
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

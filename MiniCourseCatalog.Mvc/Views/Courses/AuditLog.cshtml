@@ -1,0 +1,108 @@
+@model List<CourseAuditLogItemViewModel>
+
+@{
+    ViewData["Title"] = "Nhật Ký Kiểm Tra";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+    var activeCount = Model.Count(c => !c.IsDeleted);
+    var deletedCount = Model.Count(c => c.IsDeleted);
+    var updatedCount = Model.Count(c => c.UpdatedAt.HasValue);
+}
+
+<div class="container py-4 course-page">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Nhật Ký Kiểm Tra (Audit Log)</h2>
+            <p class="page-description">Theo dõi thời điểm tạo, cập nhật và xóa mềm của toàn bộ khóa học trong hệ thống.</p>
+        </div>
+        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+           class="btn app-btn app-btn-ghost fw-bold px-4">
+            <i class="bi bi-arrow-left me-2"></i>Danh sách khóa học
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="display-6 fw-bold text-primary">@Model.Count</div>
+                <div class="text-muted small">Tổng số bản ghi</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="display-6 fw-bold text-success">@activeCount</div>
+                <div class="text-muted small">Đang hoạt động</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="display-6 fw-bold text-danger">@deletedCount</div>
+                <div class="text-muted small">Đã xóa mềm</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-0 overflow-hidden">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên khóa học</th>
+                    <th>Giảng viên</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th><i class="bi bi-plus-circle text-success me-1"></i>CreatedAt</th>
+                    <th><i class="bi bi-pencil-square text-warning me-1"></i>UpdatedAt</th>
+                    <th><i class="bi bi-trash text-danger me-1"></i>DeletedAt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr style="@(item.IsDeleted ? "background:rgba(220,53,69,.12);" : "")">
+                        <td class="fw-bold @(item.IsDeleted ? "text-danger" : "text-primary")">
+                            @if (item.IsDeleted)
+                            {
+                                <s>@item.Code</s>
+                            }
+                            else
+                            {
+                                @item.Code
+                            }
+                        </td>
+                        <td class="@(item.IsDeleted ? "text-danger" : "")">@item.Name</td>
+                        <td class="text-muted">@item.Instructor</td>
+                        <td class="text-center">
+                            @if (item.IsDeleted)
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-trash3-fill me-1"></i>Đã xóa mềm
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Hoạt động
+                                </span>
+                            }
+                        </td>
+                        <td class="font-monospace small">@item.CreatedAtText</td>
+                        <td class="font-monospace small text-muted">@item.UpdatedAtText</td>
+                        <td class="font-monospace small @(item.DeletedAt.HasValue ? "text-danger fw-bold" : "text-muted")">
+                            @item.DeletedAtText
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-3 d-flex flex-column gap-1">
+        <p class="text-muted small mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            Thời gian được ghi nhận tự động (giờ Việt Nam) mỗi khi khóa học được tạo, chỉnh sửa hoặc xóa mềm.
+        </p>
+        <p class="text-muted small mb-0">
+            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+            Khóa học đã <strong>xóa vĩnh viễn</strong> (từ Thùng rác) sẽ không xuất hiện ở đây vì đã bị xóa hoàn toàn khỏi cơ sở dữ liệu.
+        </p>
+    </div>
+</div>

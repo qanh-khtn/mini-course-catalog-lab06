@@ -1,0 +1,90 @@
+@model List<MiniCourseCatalog.Mvc.Models.Enrollment>
+@{
+    ViewData["Title"] = "Lịch Sử Đăng Ký";
+    var theme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="py-2">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">Lịch Sử Đăng Ký</h1>
+            <p class="page-description">Toàn bộ lượt đăng ký học viên vào các khóa học.</p>
+        </div>
+        <a asp-controller="Courses" asp-action="Enroll" asp-route-theme="@theme" class="btn app-btn app-btn-primary fw-bold px-4">
+            <i class="bi bi-person-plus me-2"></i>Đăng ký mới
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center empty-state">
+            <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-3 mb-0">Chưa có lượt đăng ký nào.</p>
+            <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4 mt-3">
+                <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="stat-card">
+                    <div class="stat-number">@Model.Count</div>
+                    <div class="stat-label">Tổng lượt đăng ký</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="stat-card">
+                    <div class="stat-number" style="color:#10b981;">@Model.Select(e => e.StudentId).Distinct().Count()</div>
+                    <div class="stat-label">Học viên tham gia</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="stat-card">
+                    <div class="stat-number" style="color:#8b5cf6;">@Model.Select(e => e.CourseId).Distinct().Count()</div>
+                    <div class="stat-label">Khóa học có đăng ký</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">#</th>
+                            <th>Học viên</th>
+                            <th>Khóa học</th>
+                            <th>Chuyên ngành</th>
+                            <th class="pe-4">Ngày đăng ký</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (item, index) in Model.Select((e, i) => (e, i + 1)))
+                        {
+                            <tr>
+                                <td class="ps-4 text-muted fw-mono">@index</td>
+                                <td>
+                                    <div class="fw-bold">@item.Student.FullName</div>
+                                    <small class="text-muted">@item.Student.Email</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1">@item.Course.Code</span>
+                                    @item.Course.Name
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3">@item.Course.CourseCategory.Name</span>
+                                </td>
+                                <td class="pe-4 text-muted small fw-mono">@item.EnrolledAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer border-0 py-3 px-4 text-muted small">
+                <i class="bi bi-info-circle me-1"></i>Tổng cộng <strong>@Model.Count</strong> lượt đăng ký
+            </div>
+        </div>
+    }
+</div>
