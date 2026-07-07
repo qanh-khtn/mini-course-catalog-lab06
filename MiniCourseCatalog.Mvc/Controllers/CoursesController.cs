@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MiniCourseCatalog.Mvc.Models;
@@ -175,6 +176,7 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Create(string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -195,6 +197,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Create(CourseCreateViewModel viewModel, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -232,6 +235,7 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = "CanEnrollCourse")]
     public async Task<IActionResult> Enroll(string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -243,6 +247,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanEnrollCourse")]
     public async Task<IActionResult> Enroll(EnrollViewModel viewModel, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -278,6 +283,7 @@ public class CoursesController : Controller
     // ---------- Lab05: Edit (có RowVersion) ----------
 
     [HttpGet]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Edit(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -293,6 +299,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Edit(int id, CourseEditViewModel viewModel, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -336,6 +343,7 @@ public class CoursesController : Controller
     // ---------- Lab05: Delete confirmation -> soft delete ----------
 
     [HttpGet]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Delete(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -350,6 +358,7 @@ public class CoursesController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> DeleteConfirmed(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -365,6 +374,7 @@ public class CoursesController : Controller
     // ---------- Lab05 Feature 2: Điều chỉnh sĩ số (RowVersion) ----------
 
     [HttpGet]
+    [Authorize(Policy = "CanAdjustSeats")]
     public async Task<IActionResult> AdjustSeats(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -379,6 +389,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanAdjustSeats")]
     public async Task<IActionResult> AdjustSeats(int id, CourseAdjustSeatsViewModel viewModel, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -422,6 +433,7 @@ public class CoursesController : Controller
     // ---------- Lab05: Trash + Restore ----------
 
     [HttpGet]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Trash(string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -433,6 +445,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Restore(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -446,6 +459,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> HardDelete(int id, string theme = "light")
     {
         theme = NormalizeTheme(theme);
@@ -458,6 +472,7 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
+    [Authorize(Policy = "CanViewAuditLog")]
     public async Task<IActionResult> AuditLog(string theme = "light")
     {
         theme = NormalizeTheme(theme);

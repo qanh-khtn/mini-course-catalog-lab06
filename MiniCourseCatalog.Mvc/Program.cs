@@ -67,6 +67,16 @@ builder.Services.ConfigureApplicationCookie(o => {
 });
 builder.Services.AddHttpContextAccessor();
 
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("CanManageCourse", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CanEnrollCourse", policy => policy.RequireAuthenticatedUser());
+    options.AddPolicy("CanViewAuditLog", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CanAdjustSeats", policy => policy.RequireRole("Admin", "Staff"));
+});
+
 // Health Checks: liveness (process còn sống) + readiness (có kiểm tra database)
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy("Ứng dụng đang chạy."), tags: new[] { "live" })

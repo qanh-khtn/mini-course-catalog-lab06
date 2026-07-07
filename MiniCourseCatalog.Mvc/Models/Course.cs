@@ -21,6 +21,7 @@ public class Course : IAuditable, ISoftDeletable
     public decimal TuitionFee { get; set; }
     public int CurrentEnrollment { get; set; }
     public int MaxCapacity { get; set; }
+    public int AvailableSeats => MaxCapacity - CurrentEnrollment;
     public DateTime StartDate { get; set; }
 
     public int Version { get; set; }
