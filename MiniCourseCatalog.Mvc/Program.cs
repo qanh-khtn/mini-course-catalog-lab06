@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MiniCourseCatalog.Mvc.Data;
@@ -8,6 +9,7 @@ using MiniCourseCatalog.Mvc.Repositories;
 using MiniCourseCatalog.Mvc.Repositories.Interfaces;
 using MiniCourseCatalog.Mvc.Services;
 using MiniCourseCatalog.Mvc.Services.Interfaces;
+using MiniCourseCatalog.Mvc.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +21,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File(
-        path: "logs/lab05-.txt",
+        path: "logs/lab06-.txt",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7,
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"));
@@ -50,6 +52,21 @@ builder.Services.AddOptions<TrainingCenterConfig>()
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Identity & Cookie Auth
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o => {
+    o.Password.RequiredLength = 6; 
+    o.Password.RequireDigit = true;
+    o.Password.RequireUppercase = false; 
+    o.Password.RequireNonAlphanumeric = false;
+}).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(o => {
+    o.LoginPath = "/Account/Login";
+    o.AccessDeniedPath = "/Account/AccessDenied";
+    o.ExpireTimeSpan = TimeSpan.FromHours(2);
+});
+builder.Services.AddHttpContextAccessor();
+
 // Health Checks: liveness (process còn sống) + readiness (có kiểm tra database)
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy("Ứng dụng đang chạy."), tags: new[] { "live" })
@@ -68,6 +85,14 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 
 var app = builder.Build();
 
+// Khởi tạo Seed Data (Identity)
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await DbInitializer.SeedIdentityAsync(userManager, roleManager);
+}
+
 if (app.Environment.IsDevelopment())
 {
     // Development: thấy stack trace chi tiết để debug
@@ -85,6 +110,7 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Health Check endpoints
