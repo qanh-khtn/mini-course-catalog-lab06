@@ -24,7 +24,8 @@
         <form asp-controller="Courses"
               asp-action="Create"
               asp-route-theme="@currentTheme"
-              method="post">
+              method="post" 
+              enctype="multipart/form-data">
 
             @Html.AntiForgeryToken()
 
@@ -77,10 +78,16 @@
                     <span asp-validation-for="MaxCapacity" class="text-danger small"></span>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label asp-for="StartDate" class="form-label fw-bold"></label>
-                    <input asp-for="StartDate" class="form-control search-input" />
+                    <input asp-for="StartDate" type="date" class="form-control form-control-lg search-input" />
                     <span asp-validation-for="StartDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Thumbnail" class="form-label fw-bold"></label>
+                    <input asp-for="Thumbnail" type="file" accept="image/*" class="form-control form-control-lg search-input" />
+                    <span asp-validation-for="Thumbnail" class="text-danger small"></span>
                 </div>
             </div>
 

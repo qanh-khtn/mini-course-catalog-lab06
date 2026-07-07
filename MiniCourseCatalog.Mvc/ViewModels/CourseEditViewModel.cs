@@ -15,4 +15,6 @@ public class CourseEditViewModel : CourseCreateViewModel
     // để phát hiện Last-Save-Wins. Required: thiếu là không kiểm tra được concurrency.
     [Required]
     public string RowVersion { get; set; } = "";
+
+    public string? ExistingThumbnailPath { get; set; }
 }

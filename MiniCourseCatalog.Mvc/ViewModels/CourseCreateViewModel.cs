@@ -42,6 +42,9 @@ public class CourseCreateViewModel : IValidatableObject
     [Display(Name = "Ngày khai giảng")]
     public DateTime StartDate { get; set; } = DateTime.Today;
 
+    [Display(Name = "Ảnh đại diện")]
+    public IFormFile? Thumbnail { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (StartDate.Date < DateTime.Today)

@@ -23,6 +23,9 @@ public class Course : IAuditable, ISoftDeletable
     public int MaxCapacity { get; set; }
     public int AvailableSeats => MaxCapacity - CurrentEnrollment;
     public DateTime StartDate { get; set; }
+    
+    [StringLength(500)]
+    public string? ThumbnailPath { get; set; }
 
     public int Version { get; set; }
 

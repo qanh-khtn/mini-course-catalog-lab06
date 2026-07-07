@@ -8,20 +8,24 @@ using MiniCourseCatalog.Mvc.ViewModels;
 
 namespace MiniCourseCatalog.Mvc.Controllers;
 
+[Authorize]
 public class CoursesController : Controller
 {
     private readonly ICourseService _courseService;
     private readonly IEnrollmentService _enrollmentService;
     private readonly IStudentService _studentService;
+    private readonly IFileUploadService _fileUploadService;
 
     public CoursesController(
         ICourseService courseService,
         IEnrollmentService enrollmentService,
-        IStudentService studentService)
+        IStudentService studentService,
+        IFileUploadService fileUploadService)
     {
         _courseService = courseService;
         _enrollmentService = enrollmentService;
         _studentService = studentService;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<IActionResult> Index(string keyword = "", string category = "", string theme = "light")
@@ -217,6 +221,21 @@ public class CoursesController : Controller
             return View(viewModel);
         }
 
+        string? thumbnailPath = null;
+        if (viewModel.Thumbnail != null)
+        {
+            try
+            {
+                thumbnailPath = await _fileUploadService.UploadFileAsync(viewModel.Thumbnail, "images/thumbnails");
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(nameof(viewModel.Thumbnail), ex.Message);
+                await PopulateCategoryOptionsAsync(viewModel);
+                return View(viewModel);
+            }
+        }
+
         var course = new Course
         {
             Code = viewModel.Code,
@@ -226,7 +245,8 @@ public class CoursesController : Controller
             TuitionFee = viewModel.TuitionFee,
             CurrentEnrollment = viewModel.CurrentEnrollment,
             MaxCapacity = viewModel.MaxCapacity,
-            StartDate = viewModel.StartDate
+            StartDate = viewModel.StartDate,
+            ThumbnailPath = thumbnailPath
         };
 
         await _courseService.AddAsync(course);
@@ -321,6 +341,33 @@ public class CoursesController : Controller
             await PopulateCategoryOptionsAsync(viewModel);
             return View(viewModel);
         }
+
+        string? thumbnailPath = viewModel.ExistingThumbnailPath;
+        if (viewModel.Thumbnail != null)
+        {
+            try
+            {
+                var newPath = await _fileUploadService.UploadFileAsync(viewModel.Thumbnail, "images/thumbnails");
+                if (!string.IsNullOrEmpty(newPath))
+                {
+                    // Xóa ảnh cũ nếu có
+                    if (!string.IsNullOrEmpty(thumbnailPath))
+                    {
+                        _fileUploadService.DeleteFile(thumbnailPath);
+                    }
+                    thumbnailPath = newPath;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(nameof(viewModel.Thumbnail), ex.Message);
+                await PopulateCategoryOptionsAsync(viewModel);
+                return View(viewModel);
+            }
+        }
+        
+        // Pass thumbnailPath to service
+        viewModel.ExistingThumbnailPath = thumbnailPath;
 
         var result = await _courseService.UpdateAsync(viewModel);
         switch (result)

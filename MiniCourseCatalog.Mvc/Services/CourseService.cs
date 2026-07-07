@@ -167,6 +167,7 @@ public class CourseService : ICourseService
             CurrentEnrollment = course.CurrentEnrollment,
             MaxCapacity = course.MaxCapacity,
             StartDate = course.StartDate,
+            ExistingThumbnailPath = course.ThumbnailPath,
             RowVersion = Convert.ToBase64String(course.RowVersion)
         };
     }
@@ -204,6 +205,12 @@ public class CourseService : ICourseService
         course.CurrentEnrollment = viewModel.CurrentEnrollment;
         course.MaxCapacity = viewModel.MaxCapacity;
         course.StartDate = viewModel.StartDate;
+        
+        // Update ThumbnailPath if changed
+        if (viewModel.ExistingThumbnailPath != course.ThumbnailPath)
+        {
+            course.ThumbnailPath = viewModel.ExistingThumbnailPath;
+        }
 
         // So phiên bản user thấy lúc mở form với phiên bản hiện tại trong DB
         byte[] originalRowVersion;

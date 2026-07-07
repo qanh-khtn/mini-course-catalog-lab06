@@ -19,13 +19,14 @@
     </div>
 
     <div class="card shadow-sm rounded-4 p-4 create-course-card">
-        <form asp-controller="Courses" asp-action="Edit" asp-route-theme="@currentTheme" method="post">
+        <form asp-controller="Courses" asp-action="Edit" asp-route-id="@Model.Id" asp-route-theme="@currentTheme" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="RowVersion" />
+            <input type="hidden" asp-for="ExistingThumbnailPath" />
 
             <div class="row g-3">
                 <div class="col-md-4">
@@ -74,10 +75,22 @@
                     <span asp-validation-for="MaxCapacity" class="text-danger small"></span>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label asp-for="StartDate" class="form-label fw-bold"></label>
-                    <input asp-for="StartDate" class="form-control search-input" />
+                    <input asp-for="StartDate" type="date" class="form-control form-control-lg search-input" />
                     <span asp-validation-for="StartDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Thumbnail" class="form-label fw-bold"></label>
+                    <input asp-for="Thumbnail" type="file" accept="image/*" class="form-control form-control-lg search-input" />
+                    <span asp-validation-for="Thumbnail" class="text-danger small"></span>
+                    @if (!string.IsNullOrEmpty(Model.ExistingThumbnailPath))
+                    {
+                        <div class="mt-2">
+                            <img src="@Model.ExistingThumbnailPath" alt="Thumbnail" class="img-thumbnail" style="max-height: 100px;" />
+                        </div>
+                    }
                 </div>
             </div>
 
