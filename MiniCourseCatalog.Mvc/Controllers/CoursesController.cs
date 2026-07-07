@@ -15,17 +15,20 @@ public class CoursesController : Controller
     private readonly IEnrollmentService _enrollmentService;
     private readonly IStudentService _studentService;
     private readonly IFileUploadService _fileUploadService;
+    private readonly IAuditLogService _auditLogService;
 
     public CoursesController(
         ICourseService courseService,
         IEnrollmentService enrollmentService,
         IStudentService studentService,
-        IFileUploadService fileUploadService)
+        IFileUploadService fileUploadService,
+        IAuditLogService auditLogService)
     {
         _courseService = courseService;
         _enrollmentService = enrollmentService;
         _studentService = studentService;
         _fileUploadService = fileUploadService;
+        _auditLogService = auditLogService;
     }
 
     public async Task<IActionResult> Index(string keyword = "", string category = "", string theme = "light")
@@ -250,7 +253,9 @@ public class CoursesController : Controller
         };
 
         await _courseService.AddAsync(course);
-        TempData["SuccessMessage"] = $"Đã thêm khóa học '{course.Name}' thành công.";
+        await _auditLogService.LogAsync("CreateCourse", "Course", course.Code, "Success");
+
+        TempData["SuccessMessage"] = "Khóa học đã được tạo thành công.";
         return RedirectToAction(nameof(Index), new { theme });
     }
 
@@ -322,8 +327,8 @@ public class CoursesController : Controller
     [Authorize(Policy = "CanManageCourse")]
     public async Task<IActionResult> Edit(int id, CourseEditViewModel viewModel, string theme = "light")
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
+        var currentTheme = NormalizeTheme(theme);
+        ViewData["Theme"] = currentTheme;
 
         if (id != viewModel.Id)
             return NotFound();
@@ -356,10 +361,12 @@ public class CoursesController : Controller
                         _fileUploadService.DeleteFile(thumbnailPath);
                     }
                     thumbnailPath = newPath;
+                    await _auditLogService.LogAsync("UploadThumbnail", "Course", viewModel.Code, "Success");
                 }
             }
             catch (InvalidOperationException ex)
             {
+                await _auditLogService.LogAsync("UploadThumbnail", "Course", viewModel.Code, "Fail", ex.Message);
                 ModelState.AddModelError(nameof(viewModel.Thumbnail), ex.Message);
                 await PopulateCategoryOptionsAsync(viewModel);
                 return View(viewModel);
@@ -373,15 +380,22 @@ public class CoursesController : Controller
         switch (result)
         {
             case CourseUpdateResult.Success:
-                TempData["SuccessMessage"] = $"Đã cập nhật khóa học '{viewModel.Name}'.";
-                return RedirectToAction(nameof(Index), new { theme });
-
+                await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Success");
+                TempData["SuccessMessage"] = "Cập nhật khóa học thành công.";
+                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+            
             case CourseUpdateResult.NotFound:
-                return NotFound();
-
-            default: // ConcurrencyConflict
-                ModelState.AddModelError(string.Empty,
-                    "Dữ liệu đã được người khác cập nhật trong lúc bạn đang sửa. Vui lòng tải lại trang và thử lại.");
+                await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Fail", "Course not found");
+                TempData["ErrorMessage"] = "Không tìm thấy khóa học cần cập nhật.";
+                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+            
+            case CourseUpdateResult.ConcurrencyConflict:
+                await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Fail", "Concurrency conflict");
+                ModelState.AddModelError(string.Empty, "Dữ liệu đã bị người khác thay đổi trước đó. Vui lòng kiểm tra lại.");
+                await PopulateCategoryOptionsAsync(viewModel);
+                return View(viewModel);
+            
+            default:
                 await PopulateCategoryOptionsAsync(viewModel);
                 return View(viewModel);
         }
@@ -410,11 +424,17 @@ public class CoursesController : Controller
     {
         theme = NormalizeTheme(theme);
 
-        var ok = await _courseService.SoftDeleteAsync(id);
-        if (!ok)
-            return NotFound();
-
-        TempData["SuccessMessage"] = "Đã chuyển khóa học vào thùng rác (xóa mềm).";
+        var success = await _courseService.SoftDeleteAsync(id);
+        if (success)
+        {
+            await _auditLogService.LogAsync("DeleteCourse", "Course", id.ToString(), "Success");
+            TempData["SuccessMessage"] = "Khóa học đã được chuyển vào Thùng rác.";
+        }
+        else
+        {
+            await _auditLogService.LogAsync("DeleteCourse", "Course", id.ToString(), "Fail", "Not found");
+            TempData["ErrorMessage"] = "Không tìm thấy khóa học để xóa.";
+        }
         return RedirectToAction(nameof(Index), new { theme });
     }
 
@@ -439,8 +459,8 @@ public class CoursesController : Controller
     [Authorize(Policy = "CanAdjustSeats")]
     public async Task<IActionResult> AdjustSeats(int id, CourseAdjustSeatsViewModel viewModel, string theme = "light")
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
+        var currentTheme = NormalizeTheme(theme);
+        ViewData["Theme"] = currentTheme;
 
         if (id != viewModel.Id)
             return NotFound();
@@ -452,20 +472,23 @@ public class CoursesController : Controller
         switch (result)
         {
             case CourseAdjustResult.Success:
-                TempData["SuccessMessage"] = $"Đã cập nhật sĩ số khóa học '{viewModel.Name}' thành {viewModel.NewEnrollment}.";
-                return RedirectToAction(nameof(Index));
-
+                await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Success");
+                TempData["SuccessMessage"] = "Đã cập nhật sĩ số thành công.";
+                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+            
             case CourseAdjustResult.NotFound:
-                return NotFound();
-
+                await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Fail", "Not found");
+                TempData["ErrorMessage"] = "Không tìm thấy khóa học.";
+                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+            
             case CourseAdjustResult.ExceedsCapacity:
-                ModelState.AddModelError(nameof(viewModel.NewEnrollment),
-                    $"Sĩ số mới ({viewModel.NewEnrollment}) không được vượt quá sức chứa ({viewModel.MaxCapacity}).");
+                await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Fail", "Exceeds capacity");
+                ModelState.AddModelError("NewEnrollment", "Sĩ số không được vượt quá sức chứa tối đa.");
                 return View(viewModel);
 
-            default: // ConcurrencyConflict
-                ModelState.AddModelError(string.Empty,
-                    "Dữ liệu đã được người khác cập nhật trong lúc bạn đang chỉnh. Vui lòng tải lại trang và thử lại.");
+            case CourseAdjustResult.ConcurrencyConflict:
+                await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Fail", "Concurrency conflict");
+                ModelState.AddModelError(string.Empty, "Dữ liệu đã bị người khác thay đổi (Last-Save-Wins). Vui lòng F5 để làm mới trang trước khi nhập lại.");
                 var fresh = await _courseService.GetForAdjustSeatsAsync(viewModel.Id);
                 if (fresh != null)
                 {
@@ -473,6 +496,9 @@ public class CoursesController : Controller
                     viewModel.MaxCapacity = fresh.MaxCapacity;
                     viewModel.RowVersion = fresh.RowVersion;
                 }
+                return View(viewModel);
+            
+            default:
                 return View(viewModel);
         }
     }
@@ -498,9 +524,16 @@ public class CoursesController : Controller
         theme = NormalizeTheme(theme);
 
         var ok = await _courseService.RestoreAsync(id);
-        TempData["SuccessMessage"] = ok
-            ? "Đã khôi phục khóa học về danh sách hoạt động."
-            : "Không tìm thấy khóa học để khôi phục.";
+        if (ok)
+        {
+            await _auditLogService.LogAsync("Restore", "Course", id.ToString(), "Success");
+            TempData["SuccessMessage"] = "Đã khôi phục khóa học về danh sách hoạt động.";
+        }
+        else
+        {
+            await _auditLogService.LogAsync("Restore", "Course", id.ToString(), "Fail", "Not found");
+            TempData["ErrorMessage"] = "Không tìm thấy khóa học để khôi phục.";
+        }
         return RedirectToAction(nameof(Trash), new { theme });
     }
 

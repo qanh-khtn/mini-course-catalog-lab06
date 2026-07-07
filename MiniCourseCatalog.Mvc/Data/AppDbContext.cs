@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     // Giá trị RowVersion cố định cho seed data (SQLite không tự sinh rowversion).
     private static byte[] SeedRowVersion(int id) => new byte[] { 0, 0, 0, 0, 0, 0, 0, (byte)id };

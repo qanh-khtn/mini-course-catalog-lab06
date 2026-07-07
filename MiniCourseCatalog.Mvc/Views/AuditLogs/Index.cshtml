@@ -1,0 +1,101 @@
+@model AuditLogSearchViewModel
+
+@{
+    ViewData["Title"] = "Audit Logs";
+    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
+}
+
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">Nhật Ký Hệ Thống (Audit Logs)</h2>
+            <p class="page-description text-muted">Tra cứu lịch sử thao tác của người dùng.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3">
+            <input type="hidden" name="theme" value="@currentTheme" />
+            <div class="col-md-3">
+                <label asp-for="Keyword" class="form-label fw-bold"></label>
+                <input asp-for="Keyword" class="form-control" placeholder="User, Action..." />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Result" class="form-label fw-bold"></label>
+                <select asp-for="Result" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Success">Success</option>
+                    <option value="Fail">Fail</option>
+                    <option value="AccessDenied">AccessDenied</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="FromDate" class="form-label fw-bold"></label>
+                <input asp-for="FromDate" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="ToDate" class="form-label fw-bold"></label>
+                <input asp-for="ToDate" class="form-control" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-2"></i>Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card shadow-sm rounded-4 p-0 overflow-hidden">
+        @if (Model.Logs.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Thời gian (UTC)</th>
+                            <th>Action</th>
+                            <th>Thực thể</th>
+                            <th>User</th>
+                            <th>IP</th>
+                            <th>Kết quả</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.Logs)
+                        {
+                            <tr>
+                                <td>@log.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td><span class="badge bg-secondary">@log.Action</span></td>
+                                <td>
+                                    @log.EntityName 
+                                    @if (!string.IsNullOrEmpty(log.EntityId)) { <span class="text-muted">(@log.EntityId)</span> }
+                                </td>
+                                <td>@log.UserName</td>
+                                <td>@log.IpAddress</td>
+                                <td>
+                                    @if (log.Result == "Success")
+                                    {
+                                        <span class="badge bg-success">@log.Result</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">@log.Result</span>
+                                    }
+                                </td>
+                                <td class="text-muted small">@log.Note</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                <p class="mb-0">Không có bản ghi phù hợp.</p>
+            </div>
+        }
+    </div>
+</div>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MiniCourseCatalog.Mvc.Models;
+using MiniCourseCatalog.Mvc.Services.Interfaces;
 using MiniCourseCatalog.Mvc.ViewModels;
 
 namespace MiniCourseCatalog.Mvc.Controllers;
@@ -12,12 +13,14 @@ public class AccountController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILogger<AccountController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
-    public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger)
+    public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger, IAuditLogService auditLogService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     [AllowAnonymous]
@@ -41,6 +44,7 @@ public class AccountController : Controller
             if (result.Succeeded)
             {
                 _logger.LogInformation("User {Email} logged in.", model.Email);
+                await _auditLogService.LogAsync("Login", "ApplicationUser", model.Email, "Success");
                 if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 {
                     return LocalRedirect(model.ReturnUrl);
@@ -49,6 +53,7 @@ public class AccountController : Controller
             }
             else
             {
+                await _auditLogService.LogAsync("Login", "ApplicationUser", model.Email, "Fail", "Invalid credentials");
                 ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không đúng");
             }
         }
@@ -77,12 +82,14 @@ public class AccountController : Controller
                 await _userManager.AddToRoleAsync(user, "User");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation("User {Email} registered and logged in.", model.Email);
+                await _auditLogService.LogAsync("Register", "ApplicationUser", model.Email, "Success");
                 return RedirectToAction("Index", "Home");
             }
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
+            await _auditLogService.LogAsync("Register", "ApplicationUser", model.Email, "Fail", "Validation failed");
         }
         return View(model);
     }
@@ -94,13 +101,15 @@ public class AccountController : Controller
         var userName = User.Identity?.Name;
         await _signInManager.SignOutAsync();
         _logger.LogInformation("User {UserName} logged out.", userName);
+        await _auditLogService.LogAsync("Logout", "ApplicationUser", userName, "Success");
         return RedirectToAction("Login", "Account");
     }
 
     [AllowAnonymous]
     [HttpGet]
-    public IActionResult AccessDenied()
+    public async Task<IActionResult> AccessDenied()
     {
+        await _auditLogService.LogAsync("AccessDenied", "ApplicationUser", User.Identity?.Name, "Fail", "Attempted to access forbidden resource");
         return View();
     }
 }
