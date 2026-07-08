@@ -4,16 +4,46 @@
 }
 
 <div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-logo-icon">
-                <i class="bi bi-shield-lock-fill"></i>
+    <div class="auth-split-card">
+        <!-- Left Side: Brand Panel -->
+        <div class="auth-split-left">
+            <a href="/" class="auth-brand-logo">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>MTC Catalog</span>
+            </a>
+            
+            <div class="auth-left-content">
+                <h2 class="auth-left-title">Đào Tạo & Định Hình Tương Lai</h2>
+                <p class="text-white-50 small mb-4">Hệ thống quản lý chương trình giảng dạy, lịch học và phân quyền sĩ số trung tâm.</p>
+                
+                <ul class="auth-feature-list">
+                    <li class="auth-feature-item">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Bảo mật hệ thống chuẩn giáo dục</span>
+                    </li>
+                    <li class="auth-feature-item">
+                        <i class="bi bi-lightning-charge"></i>
+                        <span>Cập nhật chỉ tiêu, sĩ số thời gian thực</span>
+                    </li>
+                    <li class="auth-feature-item">
+                        <i class="bi bi-activity"></i>
+                        <span>Nhật ký truy vết hoạt động chi tiết</span>
+                    </li>
+                </ul>
             </div>
-            <h3 class="auth-title">Chào Mừng Trở Lại</h3>
-            <p class="auth-subtitle">Đăng nhập vào hệ thống Mini Training Center</p>
+            
+            <div class="small text-white-50">
+                &copy; @DateTime.Now.Year Mini Training Center. All rights reserved.
+            </div>
         </div>
         
-        <div class="auth-body">
+        <!-- Right Side: Form Panel -->
+        <div class="auth-split-right">
+            <div>
+                <h3 class="auth-title">Chào Mừng Trở Lại</h3>
+                <p class="auth-subtitle mb-4">Vui lòng đăng nhập tài khoản của bạn</p>
+            </div>
+            
             <form asp-action="Login" method="post">
                 <input type="hidden" asp-for="ReturnUrl" />
                 <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
@@ -21,22 +51,22 @@
                 <div class="auth-input-group">
                     <input asp-for="Email" class="auth-input w-100" placeholder="Địa chỉ email" autocomplete="username" />
                     <i class="bi bi-envelope auth-icon"></i>
-                    <span asp-validation-for="Email" class="text-danger small"></span>
+                    <span asp-validation-for="Email" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <div class="auth-input-group">
                     <input asp-for="Password" type="password" class="auth-input w-100" placeholder="Mật khẩu" autocomplete="current-password" />
                     <i class="bi bi-key auth-icon"></i>
-                    <span asp-validation-for="Password" class="text-danger small"></span>
+                    <span asp-validation-for="Password" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <button type="submit" class="auth-btn mt-2">Đăng nhập</button>
             </form>
-        </div>
-        
-        <div class="auth-footer border-top pt-4">
-            <span class="text-muted">Chưa có tài khoản?</span>
-            <a asp-action="Register" class="auth-link ms-1">Đăng ký ngay</a>
+            
+            <div class="auth-footer border-top pt-4 mt-4 mb-0 pb-0 text-start">
+                <span class="text-muted">Chưa có tài khoản?</span>
+                <a asp-action="Register" class="auth-link ms-1">Đăng ký ngay</a>
+            </div>
         </div>
     </div>
 </div>

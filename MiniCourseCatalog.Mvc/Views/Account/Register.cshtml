@@ -4,50 +4,80 @@
 }
 
 <div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-logo-icon">
-                <i class="bi bi-person-plus-fill"></i>
+    <div class="auth-split-card">
+        <!-- Left Side: Brand Panel -->
+        <div class="auth-split-left">
+            <a href="/" class="auth-brand-logo">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>MTC Catalog</span>
+            </a>
+            
+            <div class="auth-left-content">
+                <h2 class="auth-left-title">Trở Thành Học Viên Mới</h2>
+                <p class="text-white-50 small mb-4">Đăng ký tài khoản để theo dõi danh mục khóa học, đăng ký lớp học và xem thông báo.</p>
+                
+                <ul class="auth-feature-list">
+                    <li class="auth-feature-item">
+                        <i class="bi bi-journal-check"></i>
+                        <span>Tra cứu chi tiết toàn bộ danh mục khóa học</span>
+                    </li>
+                    <li class="auth-feature-item">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Tự quản lý thông tin ghi danh lớp học cá nhân</span>
+                    </li>
+                    <li class="auth-feature-item">
+                        <i class="bi bi-globe2"></i>
+                        <span>Cơ hội học tập rộng mở với giảng viên đầu ngành</span>
+                    </li>
+                </ul>
             </div>
-            <h3 class="auth-title">Đăng Ký Tài Khoản</h3>
-            <p class="auth-subtitle">Trở thành học viên tại Mini Training Center</p>
+            
+            <div class="small text-white-50">
+                &copy; @DateTime.Now.Year Mini Training Center. All rights reserved.
+            </div>
         </div>
         
-        <div class="auth-body">
+        <!-- Right Side: Form Panel -->
+        <div class="auth-split-right">
+            <div>
+                <h3 class="auth-title">Đăng Ký Tài Khoản</h3>
+                <p class="auth-subtitle mb-4">Bắt đầu hành trình học tập của bạn tại đây</p>
+            </div>
+            
             <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
                 
                 <div class="auth-input-group">
                     <input asp-for="FullName" class="auth-input w-100" placeholder="Họ và tên của bạn" />
                     <i class="bi bi-person auth-icon"></i>
-                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                    <span asp-validation-for="FullName" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <div class="auth-input-group">
                     <input asp-for="Email" class="auth-input w-100" placeholder="Địa chỉ email" autocomplete="username" />
                     <i class="bi bi-envelope auth-icon"></i>
-                    <span asp-validation-for="Email" class="text-danger small"></span>
+                    <span asp-validation-for="Email" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <div class="auth-input-group">
                     <input asp-for="Password" type="password" class="auth-input w-100" placeholder="Mật khẩu" autocomplete="new-password" />
                     <i class="bi bi-key auth-icon"></i>
-                    <span asp-validation-for="Password" class="text-danger small"></span>
+                    <span asp-validation-for="Password" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <div class="auth-input-group">
                     <input asp-for="ConfirmPassword" type="password" class="auth-input w-100" placeholder="Xác nhận mật khẩu" autocomplete="new-password" />
                     <i class="bi bi-shield-check auth-icon"></i>
-                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small d-block mt-1"></span>
                 </div>
                 
                 <button type="submit" class="auth-btn mt-2">Đăng ký tài khoản</button>
             </form>
-        </div>
-        
-        <div class="auth-footer border-top pt-4">
-            <span class="text-muted">Đã có tài khoản?</span>
-            <a asp-action="Login" class="auth-link ms-1">Đăng nhập</a>
+            
+            <div class="auth-footer border-top pt-4 mt-4 mb-0 pb-0 text-start">
+                <span class="text-muted">Đã có tài khoản?</span>
+                <a asp-action="Login" class="auth-link ms-1">Đăng nhập</a>
+            </div>
         </div>
     </div>
 </div>
