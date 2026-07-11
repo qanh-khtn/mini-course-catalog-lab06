@@ -4,15 +4,42 @@
     var attemptedPath = ViewData["AttemptedPath"]?.ToString();
 }
 
-<div class="text-center mt-5">
-    <h1 class="text-danger">Access Denied</h1>
-    <p class="lead">Bạn không có quyền truy cập vào trang này.</p>
-    <p class="text-muted">
-        Yêu cầu policy: <strong>@requiredPolicy</strong>
-        @if (!string.IsNullOrEmpty(attemptedPath))
-        {
-            <br /><span class="small">Đường dẫn: @attemptedPath</span>
-        }
-    </p>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Trở về Trang chủ</a>
+<div class="container py-5 d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 250px);">
+    <div class="card border-0 shadow-lg rounded-4 p-5 text-center" style="max-width: 500px; background: var(--surface);">
+        <div class="rounded-circle p-4 bg-danger bg-opacity-10 text-danger mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-shield-slash fs-1"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Từ chối truy cập</h2>
+        <p class="text-secondary mb-4">Tài khoản của bạn không có đủ quyền hạn để xem trang này.</p>
+        
+        <div class="rounded-3 p-3 text-start mb-4 border" style="font-size: 0.9rem; background: var(--bg-surface-hover); border-color: var(--border) !important;">
+            <div class="mb-1 text-secondary">
+                <span class="fw-semibold">Yêu cầu quyền:</span> <code class="fw-mono text-danger bg-danger bg-opacity-10 px-2 py-0.5 rounded">@requiredPolicy</code>
+            </div>
+            @if (!string.IsNullOrEmpty(attemptedPath))
+            {
+                <div class="text-secondary text-truncate">
+                    <span class="fw-semibold">Đường dẫn:</span> <code class="fw-mono text-primary bg-primary bg-opacity-10 px-2 py-0.5 rounded" title="@attemptedPath">@attemptedPath</code>
+                </div>
+            }
+        </div>
+        
+        <div class="d-flex gap-2 justify-content-center">
+            <a asp-controller="Home" asp-action="Index" class="btn app-btn app-btn-primary px-4">
+                <i class="bi bi-house-door me-2"></i>Trang chủ
+            </a>
+            <button id="btnBack" class="btn app-btn app-btn-ghost px-4">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </button>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script nonce="@Context.Items["csp-nonce"]">
+        document.getElementById('btnBack').addEventListener('click', function () {
+            window.history.back();
+        });
+    </script>
+}
+
