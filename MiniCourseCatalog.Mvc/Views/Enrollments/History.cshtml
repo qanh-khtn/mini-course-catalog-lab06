@@ -16,10 +16,9 @@
 
     @if (!Model.Any())
     {
-        <div class="card border-0 shadow-sm rounded-4 p-5 text-center empty-state">
-            <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
-            <p class="text-muted mt-3 mb-0">Chưa có lượt đăng ký nào.</p>
-            <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4 mt-3">
+        <partial name="~/Views/Shared/_EmptyState.cshtml" model='@("Chưa có lượt đăng ký nào.")' />
+        <div class="text-center mt-3">
+            <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
                 <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
             </a>
         </div>
@@ -28,20 +27,20 @@
     {
         <div class="row g-3 mb-4">
             <div class="col-sm-4">
-                <div class="stat-card">
-                    <div class="stat-number">@Model.Count</div>
+                <div class="stat-card" style="background: var(--surface); border: 1px solid var(--border);">
+                    <div class="stat-number text-primary">@Model.Count</div>
                     <div class="stat-label">Tổng lượt đăng ký</div>
                 </div>
             </div>
             <div class="col-sm-4">
-                <div class="stat-card">
-                    <div class="stat-number" style="color:#10b981;">@Model.Select(e => e.StudentId).Distinct().Count()</div>
+                <div class="stat-card" style="background: var(--surface); border: 1px solid var(--border);">
+                    <div class="stat-number" style="color: var(--success);">@Model.Select(e => e.StudentId).Distinct().Count()</div>
                     <div class="stat-label">Học viên tham gia</div>
                 </div>
             </div>
             <div class="col-sm-4">
-                <div class="stat-card">
-                    <div class="stat-number" style="color:#8b5cf6;">@Model.Select(e => e.CourseId).Distinct().Count()</div>
+                <div class="stat-card" style="background: var(--surface); border: 1px solid var(--border);">
+                    <div class="stat-number" style="color: var(--accent);">@Model.Select(e => e.CourseId).Distinct().Count()</div>
                     <div class="stat-label">Khóa học có đăng ký</div>
                 </div>
             </div>

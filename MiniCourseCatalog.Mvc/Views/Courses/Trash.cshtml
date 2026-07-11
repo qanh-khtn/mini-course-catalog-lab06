@@ -28,14 +28,14 @@
                 </div>
             </div>
             <div class="modal-footer border-0 pt-2 px-4 pb-4 gap-2">
-                <button type="button" class="btn btn-outline-secondary fw-semibold px-4" data-bs-dismiss="modal">
+                <button type="button" class="btn app-btn app-btn-ghost fw-semibold px-4" data-bs-dismiss="modal">
                     Hủy bỏ
                 </button>
                 <form id="hardDeleteForm" method="post" class="d-inline"
                       asp-controller="Courses" asp-action="HardDelete">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="hardDeleteId" name="id" value="" />
-                    <button type="submit" class="btn btn-danger fw-bold px-4">
+                    <button type="submit" class="btn app-btn app-btn-danger fw-bold px-4">
                         <i class="bi bi-trash3-fill me-1"></i>Xóa vĩnh viễn
                     </button>
                 </form>
@@ -59,10 +59,7 @@
 
     @if (Model.Count == 0)
     {
-        <div class="empty-state text-center p-5 rounded-4">
-            <div class="display-6 fw-bold mb-2">Thùng rác trống</div>
-            <p class="text-muted mb-0">Chưa có khóa học nào bị xóa mềm.</p>
-        </div>
+        <partial name="~/Views/Shared/_EmptyState.cshtml" model='@("Thùng rác trống. Chưa có khóa học nào bị xóa mềm.")' />
     }
     else
     {

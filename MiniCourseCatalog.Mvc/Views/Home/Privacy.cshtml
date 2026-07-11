@@ -1,6 +1,33 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Chính sách quyền riêng tư";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-4">
+    <div class="page-header mb-4">
+        <div>
+            <h1 class="page-title">Chính Sách Quyền Riêng Tư</h1>
+            <p class="page-description">Cam kết bảo mật thông tin học viên và dữ liệu hệ thống.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5" style="background: var(--surface); border: 1px solid var(--border) !important;">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-shield-lock text-primary me-2"></i>1. Bảo mật thông tin tài khoản</h5>
+                <p class="text-secondary small">Mọi tài khoản học viên, giảng viên và nhân viên vận hành được mã hóa bằng Identity framework của Microsoft ASP.NET Core. Mật khẩu được băm (hash) bằng PBKDF2 bảo mật cao chống brute-force và rò rỉ dữ liệu.</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-clipboard-data text-primary me-2"></i>2. Nhật ký hoạt động (Audit Logs)</h5>
+                <p class="text-secondary small">Hệ thống tự động ghi lại IP, thời gian và các hành động nhạy cảm như ghi danh, điều chỉnh sĩ số hoặc thay đổi thông tin khóa học để phục vụ công tác thanh tra bảo mật.</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-cookie text-primary me-2"></i>3. Sử dụng Cookie</h5>
+                <p class="text-secondary small">Chúng tôi chỉ lưu trữ các cookie thiết yếu phục vụ quá trình đăng nhập duy trì phiên (Session) và cấu hình giao diện Sáng/Tối (`app-theme`). Không chia sẻ cho bên thứ ba hoặc nhà quảng cáo.</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold mb-3"><i class="bi bi-database-check text-primary me-2"></i>4. Lưu trữ cơ sở dữ liệu</h5>
+                <p class="text-secondary small">Thông tin học phí, lớp học được sao lưu định kỳ trên hệ thống máy chủ nội bộ. Chỉ nhân viên được phân quyền Admin/Staff mới có thể xem hoặc thay đổi dữ liệu này.</p>
+            </div>
+        </div>
+    </div>
+</div>

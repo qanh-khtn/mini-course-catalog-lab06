@@ -16,15 +16,15 @@
         <form method="get" class="row g-3">
             <div class="col-md-3">
                 <label asp-for="User" class="form-label fw-bold"></label>
-                <input asp-for="User" class="form-control" placeholder="admin@coursecenter.test" />
+                <input asp-for="User" class="form-control search-input" placeholder="admin@coursecenter.test" />
             </div>
             <div class="col-md-3">
                 <label asp-for="ActionName" class="form-label fw-bold"></label>
-                <input asp-for="ActionName" class="form-control" placeholder="AdjustSeats" />
+                <input asp-for="ActionName" class="form-control search-input" placeholder="AdjustSeats" />
             </div>
             <div class="col-md-2">
                 <label asp-for="Result" class="form-label fw-bold"></label>
-                <select asp-for="Result" class="form-select">
+                <select asp-for="Result" class="form-select search-input">
                     <option value="">-- Tất cả --</option>
                     <option value="Success">Success</option>
                     <option value="Fail">Fail</option>
@@ -32,14 +32,14 @@
             </div>
             <div class="col-md-2">
                 <label asp-for="FromDate" class="form-label fw-bold"></label>
-                <input asp-for="FromDate" class="form-control" />
+                <input asp-for="FromDate" class="form-control search-input" />
             </div>
             <div class="col-md-2">
                 <label asp-for="ToDate" class="form-label fw-bold"></label>
-                <input asp-for="ToDate" class="form-control" />
+                <input asp-for="ToDate" class="form-control search-input" />
             </div>
             <div class="col-12 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary px-4">
+                <button type="submit" class="btn app-btn app-btn-primary px-4 fw-bold">
                     <i class="bi bi-search me-2"></i>Tìm kiếm
                 </button>
             </div>
