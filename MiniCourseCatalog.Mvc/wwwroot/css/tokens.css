@@ -1,0 +1,87 @@
+/* tokens.css - Single Source of Truth for Design System */
+
+:root {
+    /* 1. Typography */
+    --font-ui: 'Outfit', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* 2. Brand Accent (Electric Blue ONLY) */
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-muted: rgba(37, 99, 235, 0.1);
+
+    /* 3. Neutrals (Slate scale) - Light Mode */
+    --bg-base: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f1f5f9;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+
+    /* 4. Semantic (Muted) */
+    --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.1);
+    
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.1);
+    
+    --danger: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.1);
+
+    /* 5. Radius */
+    --r-sm: .5rem;
+    --r: .875rem;
+    --r-lg: 1.25rem;
+    --r-full: 9999px;
+
+    /* 6. Shadows (Diffusion) */
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+
+    /* Legacy compatibility for site.css */
+    --app-bg: var(--bg-base);
+    --surface: var(--bg-surface);
+    --surface-2: var(--bg-surface-hover);
+    --text: var(--text-primary);
+    --text-muted: var(--text-secondary);
+    --radius: var(--r);
+    --shadow-card: var(--shadow-lg);
+    --accent-2: var(--accent);
+}
+
+[data-bs-theme="dark"] {
+    /* Brand Accent */
+    --accent: #60a5fa;
+    --accent-hover: #93c5fd;
+    --accent-muted: rgba(96, 165, 250, 0.15);
+
+    /* Neutrals (Slate scale) - Dark Mode */
+    --bg-base: #0B0F14; /* Off-black */
+    --bg-surface: #1e293b;
+    --bg-surface-hover: #334155;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #64748b;
+    
+    --border: #334155;
+    --border-hover: #475569;
+
+    /* Semantic */
+    --success: #34d399;
+    --success-bg: rgba(52, 211, 153, 0.15);
+    
+    --warning: #fbbf24;
+    --warning-bg: rgba(251, 191, 36, 0.15);
+    
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.15);
+
+    /* Shadows adapted for dark mode */
+    --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
