@@ -1,9 +1,12 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MiniCourseCatalog.Mvc.Data;
 using MiniCourseCatalog.Mvc.Filters;
+using MiniCourseCatalog.Mvc.Middleware;
 using MiniCourseCatalog.Mvc.Options;
 using MiniCourseCatalog.Mvc.Repositories;
 using MiniCourseCatalog.Mvc.Repositories.Interfaces;
@@ -14,7 +17,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Serilog: structured log ra Console + File (logs/lab05-yyyyMMdd.txt, giữ 7 ngày) ---
+// --- Serilog: structured log ra Console + File (logs/lab06-yyyyMMdd.txt, giữ 7 ngày) ---
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
@@ -54,27 +57,60 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Identity & Cookie Auth
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o => {
-    o.Password.RequiredLength = 6; 
+    o.Password.RequiredLength = 6;
     o.Password.RequireDigit = true;
-    o.Password.RequireUppercase = false; 
+    o.Password.RequireUppercase = false;
     o.Password.RequireNonAlphanumeric = false;
+
+    // Lockout: khóa tạm tài khoản sau nhiều lần đăng nhập sai liên tiếp — chống brute-force mật khẩu
+    o.Lockout.MaxFailedAccessAttempts = 5;
+    o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    o.Lockout.AllowedForNewUsers = true;
 }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+// Rate Limiting: chặn brute-force đăng nhập ở tầng request, độc lập với Identity Lockout
+// (Lockout khóa theo TÀI KHOẢN cụ thể; Rate Limiter chặn theo TẦN SUẤT request bất kể có
+// đoán trúng email tồn tại hay không — hai lớp phòng thủ bổ trợ nhau).
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("login", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        var auditLogService = context.HttpContext.RequestServices.GetRequiredService<IAuditLogService>();
+        await auditLogService.LogAsync("LoginRateLimited", "ApplicationUser", null, "Fail",
+            $"Quá nhiều yêu cầu đăng nhập từ {context.HttpContext.Connection.RemoteIpAddress}");
+    };
+});
 
 builder.Services.ConfigureApplicationCookie(o => {
     o.LoginPath = "/Account/Login";
     o.AccessDeniedPath = "/Account/AccessDenied";
     o.ExpireTimeSpan = TimeSpan.FromHours(2);
+    o.Events.OnRedirectToAccessDenied = context =>
+    {
+        var path = context.Request.Path + context.Request.QueryString;
+        context.Response.Redirect($"/Account/AccessDenied?attempted={Uri.EscapeDataString(path)}");
+        return Task.CompletedTask;
+    };
 });
 builder.Services.AddHttpContextAccessor();
 
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("CanManageCourse", policy => policy.RequireRole("Admin", "Staff"));
-    options.AddPolicy("CanEnrollCourse", policy => policy.RequireAuthenticatedUser());
-    options.AddPolicy("CanViewAuditLog", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CanViewCourse", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CanManageCourse", policy => policy.RequireRole("Admin"));
     options.AddPolicy("CanAdjustSeats", policy => policy.RequireRole("Admin", "Staff"));
+    options.AddPolicy("CanViewAuditLog", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("CanUploadCourseThumbnail", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("CanEnrollCourse", policy => policy.RequireAuthenticatedUser());
 });
 
 // Health Checks: liveness (process còn sống) + readiness (có kiểm tra database)
@@ -119,9 +155,13 @@ else
 
 app.UseSerilogRequestLogging();
 
+// Security headers + CSP nonce — đăng ký sớm để áp dụng cho MỌI response, kể cả static files
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -195,3 +235,8 @@ app.MapControllerRoute(
 app.MapControllers();
 
 app.Run();
+
+// Cho phép WebApplicationFactory<Program> trong MiniCourseCatalog.Tests thấy được entry point
+// (top-level statements sinh class Program internal theo mặc định — cần khai báo partial + public
+// để assembly test có thể tham chiếu).
+public partial class Program { }

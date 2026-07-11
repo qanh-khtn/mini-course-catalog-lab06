@@ -1,166 +1,256 @@
-# Mini Training Center Course Catalog MVC — Lab05
+# Mini Training Center — Lab06 Final: Secure Course Catalog MVC
 
-Ứng dụng ASP.NET Core MVC quản lý danh mục khóa học cho một trung tâm đào tạo nhỏ. Project được phát triển tiếp từ Lab04 và nâng cấp theo yêu cầu **Lab05**: bổ sung **Soft Delete**, **Audit Fields**, **Optimistic Concurrency** (RowVersion), **Serilog logging**, **Health Checks** và **ProblemDetails API**.
+> **Final Mini Project** tích hợp Lab01–Lab05 + ASP.NET Core Identity + Authorization (Policy & Role) + Security Pack (Anti-Forgery, XSS, SQLi, Safe Upload, Audit Log, Health Check, ProblemDetails).
+>
+> Branch: `lab06-final-secure-course-center`
 
-> Nhánh thực hiện Lab05: `main`
+---
 
-## Chủ Đề
+## Công nghệ sử dụng
 
-**Mini Training Center** — Hệ thống quản lý nội bộ trung tâm đào tạo: xem danh sách khóa học, xem chi tiết, tạo/sửa/xóa mềm, khôi phục từ thùng rác, thống kê, đăng ký khóa học, theo dõi sức khỏe hệ thống.
+| Thành phần | Phiên bản / Gói |
+|-----------|-----------------|
+| **Runtime** | .NET 10 |
+| **Framework** | ASP.NET Core MVC |
+| **ORM** | EF Core 10 + SQLite (`Microsoft.EntityFrameworkCore.Sqlite`) |
+| **Identity** | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` |
+| **Logging** | Serilog (`Serilog.AspNetCore`, `Serilog.Sinks.File`) |
+| **Health Checks** | `AspNetCore.HealthChecks.Sqlite` |
+| **API Docs** | ProblemDetails (built-in .NET 10) |
+| **UI** | Bootstrap 5 + Bootstrap Icons + Chart.js |
+| **Testing** | xUnit |
 
-## Công Nghệ Sử Dụng
+---
 
-- ASP.NET Core MVC (.NET 10)
-- Entity Framework Core 10 + SQLite
-- Dependency Injection, Options Pattern
-- Repository Pattern, Service Layer
-- Serilog (Console + File rolling daily)
-- ASP.NET Core Health Checks
-- xUnit (Unit Test với Fake Repository)
-- Razor View Engine, Bootstrap 5, Chart.js
+## Kiến trúc
 
-## Kiến Trúc & Luồng Xử Lý
-
-```text
-Controller → Service → Repository → DbContext → Database (SQLite)
+```
+Browser
+  │
+  ▼
+Controller  ──── [ThemeFilter / AuthFilter]
+  │
+  ▼
+Service (ICourseService, IAuditLogService, IFileUploadService, …)
+  │
+  ▼
+Repository (ICourseRepository, ICourseCategoryRepository, …)
+  │
+  ▼
+AppDbContext (EF Core)
+  │
+  ▼
+SQLite Database (MiniCourseCatalog.db)
 ```
 
-- **Controller** chỉ nhận request và gọi Service, không query database trực tiếp.
-- **Service** chứa logic nghiệp vụ, map dữ liệu sang ViewModel.
-- **Repository** chịu trách nhiệm truy vấn EF Core.
-- **DbContext** (`AppDbContext`) quản lý phiên làm việc với database, tự động set audit fields qua `SaveChangesAsync`.
+**Trách nhiệm từng lớp:**
 
-## Cấu Trúc Thư Mục
+| Lớp | Trách nhiệm |
+|-----|------------|
+| **Controller** | Nhận HTTP request, validate ViewModel, gọi Service, trả về View/Redirect. Không chứa logic nghiệp vụ. |
+| **Service** | Xử lý nghiệp vụ, mapping Entity ↔ ViewModel, xử lý concurrency (RowVersion), gọi Repository. |
+| **Repository** | Truy vấn database bằng EF Core/LINQ. Không expose IQueryable ra ngoài. |
+| **AppDbContext** | Cấu hình model, migration, seeding. |
 
-```text
-MiniCourseCatalog.Mvc
-├── Controllers/          # CoursesController, CourseCategoriesController, EnrollmentsController, DataHealthController, HomeController
-├── Data/
-│   └── AppDbContext.cs   # DbSet, Fluent API mapping, Seed Data, Global Query Filter, SaveChangesAsync interceptor
-├── Models/
-│   ├── Course.cs         # + IsDeleted, DeletedAt, CreatedAt, UpdatedAt, RowVersion
-│   ├── IAuditable.cs     # Interface audit fields
-│   └── ISoftDeletable.cs # Interface soft delete
-├── Repositories/
-│   ├── Interfaces/       # ICourseRepository, IEnrollmentRepository, ...
-│   └── *.cs
-├── Services/
-│   ├── Interfaces/       # ICourseService, IEnrollmentService, ...
-│   └── *.cs
-├── Options/
-│   └── TrainingCenterConfig.cs
-├── ViewModels/
-│   ├── CourseEditViewModel.cs      # + RowVersion
-│   ├── CourseDeleteViewModel.cs
-│   └── CourseTrashItemViewModel.cs
-├── Migrations/           # ..._AddCourseSoftDeleteAuditFields
-├── Fakes/
-│   └── FakeCourseRepository.cs
-└── Views/
-    └── Courses/
-        ├── Edit.cshtml   # Form sửa + concurrency
-        ├── Delete.cshtml # Xác nhận xóa mềm
-        └── Trash.cshtml  # Thùng rác + khôi phục
+**Tại sao dùng DI (Dependency Injection)?** — Dễ test (mock interface), tách biệt vòng đời (Scoped per request), giảm coupling giữa các lớp.
 
-MiniCourseCatalog.Tests/  # Project unit test (xUnit + Fake Repository)
-```
+---
 
-## Mô Hình Dữ Liệu & Quan Hệ
+## Cách chạy
 
-Ứng dụng có **1 `AppDbContext`**, **4 Entity** và **3 Relationship**:
+```bash
+# 1. Restore dependencies
+dotnet restore
 
-| Quan hệ | Loại | Ý nghĩa |
-|---|---|---|
-| `CourseCategory` → `Course` | One-to-Many | Một chuyên ngành có nhiều khóa học |
-| `Course` → `Enrollment` | One-to-Many | Một khóa học có nhiều lượt đăng ký |
-| `Student` → `Enrollment` | One-to-Many | Một học viên có nhiều lượt đăng ký |
-
-`Enrollment` là bảng trung gian thể hiện quan hệ Many-to-Many giữa `Course` và `Student`.
-
-## Các Yêu Cầu Lab05 Đã Thực Hiện
-
-### Soft Delete & Audit Fields
-
-- `ISoftDeletable`: interface khai báo `IsDeleted`, `DeletedAt`
-- `IAuditable`: interface khai báo `CreatedAt`, `UpdatedAt`
-- `Course` implement cả hai interface
-- `AppDbContext.SaveChangesAsync` tự động set `CreatedAt`/`UpdatedAt` khi lưu
-- Global query filter `HasQueryFilter(c => !c.IsDeleted)` — mặc định ẩn bản ghi đã xóa mềm
-- `IgnoreQueryFilters()` dùng cho Trash/Restore để thấy bản ghi đã xóa
-
-### Optimistic Concurrency (RowVersion)
-
-- Trường `RowVersion` (`byte[]`) trên `Course` với `IsRowVersion()` trong Fluent API
-- Edit action bẫy `DbUpdateConcurrencyException`, trả thông báo lỗi khi có xung đột
-- CourseCode unique index (`IX_Courses_Code`) + `CodeExistsAsync` kiểm tra trùng mã
-
-### CRUD đầy đủ + Soft Delete
-
-| Tính năng | Route | Mô tả |
-|---|---|---|
-| Tạo mới | `POST /Courses/Create` | Validation mã duy nhất |
-| Chỉnh sửa | `GET/POST /Courses/Edit/{id}` | RowVersion concurrency |
-| Xóa mềm | `POST /Courses/Delete/{id}` | Đặt `IsDeleted = true` |
-| Thùng rác | `GET /Courses/Trash` | Liệt kê bản ghi đã xóa |
-| Khôi phục | `POST /Courses/Restore/{id}` | Đặt `IsDeleted = false` |
-
-### Serilog Logging
-
-- Ghi log ra Console và File (rolling daily, giữ 7 ngày)
-- Structured request logging middleware
-- Override level: `Microsoft.*` → Warning, `Microsoft.Hosting.Lifetime` → Information
-
-### Health Checks
-
-- `/health/live` — liveness probe, luôn trả `Healthy`
-- `/health/ready` — readiness probe, kiểm tra kết nối database SQLite
-
-### ProblemDetails API
-
-- `GET /api/courses/{id}` — trả JSON khóa học hoặc ProblemDetails 404 có `traceId` + `timestamp`
-
-### Migration
-
-- `AddCourseSoftDeleteAuditFields` — thêm 5 cột: `IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt`, `RowVersion`
-
-## Kết Quả Chạy Ứng Dụng
-
-| Trang | Route | Mô tả |
-|---|---|---|
-| Trang chủ | `/` | Dashboard tổng quan |
-| Danh sách | `/Courses` | Chỉ hiển thị khóa chưa xóa (Global Filter) |
-| Chi tiết | `/Courses/Detail/{id}` | Thông tin + audit timestamps |
-| Tạo mới | `/Courses/Create` | Validation mã duy nhất |
-| Chỉnh sửa | `/Courses/Edit/{id}` | RowVersion concurrency |
-| Xóa mềm | `/Courses/Delete/{id}` | Xác nhận trước khi xóa |
-| Thùng rác | `/Courses/Trash` | Xem + khôi phục bản ghi đã xóa |
-| Đăng ký | `/Courses/Enroll` | Nghiệp vụ Transaction |
-| Thống kê | `/Courses/Stats` | Doanh thu, sĩ số, biểu đồ Chart.js |
-| Tìm kiếm | `/Courses/Search` | Lọc theo từ khóa và chuyên ngành |
-| Data Health | `/DataHealth` | Kiểm tra migration, seed, tracking |
-| Liveness | `/health/live` | Health check liveness |
-| Readiness | `/health/ready` | Health check DB readiness |
-| API | `/api/courses/{id}` | JSON + ProblemDetails |
-
-## Hướng Dẫn Chạy Project
-
-```powershell
-# 1. Khôi phục & cập nhật database
-cd MiniCourseCatalog.Mvc
+# 2. Tạo schema + bảng Identity + AuditLogs + seed dữ liệu
+#    (tự động chạy DbInitializer khi app khởi động lần đầu)
 dotnet ef database update
 
-# 2. Chạy ứng dụng (từ root)
-dotnet run --project MiniCourseCatalog.Mvc
+# 3. Chạy ứng dụng (HTTPS)
+dotnet run --launch-profile https
 
-# 3. Chạy unit test
-dotnet test
+# 4. Truy cập
+# https://localhost:<port>     (xem cổng trong launchSettings.json)
 ```
 
-Sau đó mở URL hiển thị trong terminal (ví dụ `http://localhost:5063`).
+### Reset database
 
-## Ghi Chú
+```bash
+# Xóa file database rồi chạy lại migrations
+Remove-Item MiniCourseCatalog.Mvc\MiniCourseCatalog.db -Force
+dotnet ef database update
+```
 
-- Dữ liệu lưu trong SQLite (`MiniCourseCatalog.db`), không mất khi tắt ứng dụng.
-- Xóa mềm không xóa dữ liệu khỏi DB — có thể khôi phục bất cứ lúc nào từ `/Courses/Trash`.
-- Log file được ghi tại thư mục `logs/` theo format `lab05-YYYYMMDD_NNN.txt`.
-- Nếu trình duyệt chưa cập nhật CSS mới, nhấn `Ctrl + F5` để refresh mạnh.
+### Danh sách migrations đã có
+
+| Migration | Mô tả |
+|-----------|-------|
+| `InitialCreate` | Schema ban đầu (Course, CourseCategory, Student, Enrollment) |
+| `AddThumbnailToCourse` | Thêm cột `ThumbnailPath` cho Course |
+| `AddAuditLogs` | Thêm bảng `AuditLogs` |
+| `Lab06IdentitySecurityFinal` | Bảng Identity (Users, Roles, Claims...) + soft delete + RowVersion |
+
+---
+
+## Tài khoản demo (seed tự động qua `Data/DbInitializer.cs`)
+
+| Email | Mật khẩu | Role |
+|-------|----------|------|
+| admin@coursecenter.test | Admin@123 | Admin |
+| staff@coursecenter.test | Staff@123 | Staff |
+| user@coursecenter.test | User@123 | User |
+
+---
+
+## Ma trận phân quyền
+
+### 6 Policy được định nghĩa trong `Program.cs`
+
+| Policy | Ý nghĩa | Roles được phép |
+|--------|---------|----------------|
+| `CanViewCourse` | Xem danh sách / chi tiết khóa học (trang quản lý) | Admin, Staff |
+| `CanManageCourse` | Tạo, sửa, xóa mềm, restore khóa học | Admin |
+| `CanAdjustSeats` | Điều chỉnh sĩ số (Feature 1) | Admin, Staff |
+| `CanViewAuditLog` | Xem Audit Logs và Security Dashboard | Admin |
+| `CanUploadCourseThumbnail` | Upload/thay thumbnail (Feature 2) | Admin |
+| `CanEnrollCourse` | Đăng ký học viên vào khóa học | Mọi user đã đăng nhập |
+
+### Bảng quyền theo chức năng
+
+| Chức năng | URL | Bảo vệ bằng | Admin | Staff | User | Anonymous |
+|-----------|-----|------------|-------|-------|------|-----------|
+| Catalog công khai | `/Courses/Catalog` | `[AllowAnonymous]` | ✅ | ✅ | ✅ | ✅ |
+| Xem danh sách khóa học | `/Courses` | `CanViewCourse` | ✅ | ✅ | ❌ | ❌ |
+| Xem chi tiết | `/Courses/Detail/{id}` | `CanViewCourse` | ✅ | ✅ | ❌ | ❌ |
+| Tạo khóa học | `/Courses/Create` | `CanManageCourse` | ✅ | ❌ | ❌ | ❌ |
+| Sửa khóa học | `/Courses/Edit/{id}` | `CanManageCourse` | ✅ | ❌ | ❌ | ❌ |
+| Xóa mềm (soft delete) | `/Courses/Delete/{id}` | `CanManageCourse` | ✅ | ❌ | ❌ | ❌ |
+| Khôi phục (restore) | `/Courses/Trash` | `CanManageCourse` | ✅ | ❌ | ❌ | ❌ |
+| **Xóa vĩnh viễn** | `/Courses/HardDelete` | **`[Authorize(Roles="Admin")]`** | ✅ | ❌ | ❌ | ❌ |
+| Điều chỉnh sĩ số | `/Courses/AdjustSeats/{id}` | `CanAdjustSeats` | ✅ | ✅ | ❌ | ❌ |
+| Upload thumbnail | `/Courses/UploadThumbnail` | `CanUploadCourseThumbnail` | ✅ | ❌ | ❌ | ❌ |
+| Đăng ký học viên | `/Courses/Enroll` | `CanEnrollCourse` | ✅ | ✅ | ✅ | ❌ |
+| Audit Logs | `/AuditLogs` | `CanViewAuditLog` | ✅ | ❌ | ❌ | ❌ |
+| Security Dashboard | `/` (Admin view) | `CanViewAuditLog` | ✅ | ❌ | ❌ | ❌ |
+| Health Check | `/health/live`, `/health/ready` | `[AllowAnonymous]` | ✅ | ✅ | ✅ | ✅ |
+| API Search | `/api/courses/search` | `[AllowAnonymous]` | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+## Cách kiểm thử phân quyền (gõ URL trực tiếp)
+
+> **Quan trọng:** Luôn test bằng cách gõ URL trực tiếp, không chỉ dựa vào UI (vì nút có thể ẩn nhưng URL vẫn có thể truy cập).
+
+```
+1. Đăng nhập Staff (staff@coursecenter.test / Staff@123)
+   → Gõ: /Courses/Create
+   → Kết quả mong đợi: Trang AccessDenied (403)
+
+2. Đăng nhập Staff
+   → Gõ: /Courses/Edit/1
+   → Kết quả mong đợi: Trang AccessDenied (403)
+
+3. Đăng nhập Staff
+   → Gõ: /Courses/AdjustSeats/1
+   → Kết quả mong đợi: Hiển thị form điều chỉnh sĩ số (được phép)
+
+4. Đăng nhập Staff
+   → POST /Courses/HardDelete với id=1
+   → Kết quả mong đợi: AccessDenied (role Admin required)
+
+5. Chưa đăng nhập (Anonymous)
+   → Gõ: /Courses
+   → Kết quả mong đợi: Redirect về /Account/Login?ReturnUrl=%2FCourses
+
+6. Đăng nhập User (user@coursecenter.test / User@123)
+   → Gõ: /AuditLogs
+   → Kết quả mong đợi: Trang AccessDenied (403)
+
+7. Chưa đăng nhập
+   → Gõ: /Courses/Catalog
+   → Kết quả mong đợi: Hiển thị danh sách khóa học (không redirect)
+```
+
+---
+
+## Security Pack
+
+| Biện pháp | Nằm ở file | Mô tả |
+|-----------|-----------|-------|
+| **Anti-Forgery Token** | Mọi form POST trong Views + `[ValidateAntiForgeryToken]` trong Controllers | Chống CSRF |
+| **Razor Encoding (chống XSS)** | Toàn bộ Views (không dùng `Html.Raw` với user input) | Tất cả output qua `@` được HTML-encode tự động |
+| **LINQ (chống SQL Injection)** | `Services/CourseService.cs`, `Repositories/` | Không nối chuỗi SQL; mọi query qua EF Core parameterized |
+| **Safe Upload** | `Services/FileUploadService.cs` | Whitelist `.jpg/.jpeg/.png/.webp`; tối đa 2MB; tên file GUID; `FileMode.CreateNew` chống ghi đè; chống path traversal |
+| **Cookie HttpOnly** | `.AspNetCore.Identity.Application` | Cookie session không truy cập được từ JavaScript |
+| **Logout dùng POST** | `Views/Shared/_Layout.cshtml` + `AccountController.Logout()` | Chống CSRF trên logout |
+| **Exception Handling** | `Program.cs` | Development: chi tiết exception; Production: trang lỗi chung, không lộ stack trace |
+| **Theme Cookie an toàn** | `Controllers/ThemeController.cs` | `HttpOnly=false` (cần đọc từ JS), `SameSite=Lax`, `IsEssential=true`, `MaxAge=365 ngày` |
+
+---
+
+## 3 Feature câu 2
+
+### Feature 1 — Tách quyền học phí vs điều chỉnh sĩ số
+
+- **Mục tiêu:** Staff chỉ được điều chỉnh số chỗ, không được chạm vào học phí
+- **Policy:** `CanAdjustSeats` = Admin + Staff
+- **Route:** `GET/POST /Courses/AdjustSeats/{id}`
+- **Layer:** `CourseAdjustSeatsViewModel` chỉ nhận `NewEnrollment` + `RowVersion` → chống overposting (TuitionFee không có trong ViewModel)
+- **Xử lý concurrency:** `DbUpdateConcurrencyException` → báo lỗi RowVersion conflict
+- **Audit:** Ghi `AdjustSeats` vào AuditLogs khi thành công/thất bại
+
+### Feature 2 — Thay thumbnail an toàn (Fault-Tolerant)
+
+- **Mục tiêu:** Thay ảnh không làm mất ảnh cũ nếu có lỗi
+- **Layer:** `Services/FileUploadService.cs` + `CoursesController.UploadThumbnail`
+- **Thứ tự an toàn:** validate → lưu file mới (tên GUID) → cập nhật DB → **chỉ sau đó** mới xóa ảnh cũ
+- **Nếu lỗi ở bất kỳ bước nào:** giữ ảnh cũ, xóa file mới (nếu đã lưu)
+- **Audit:** Ghi `ReplaceCourseThumbnail` vào AuditLogs
+
+### Feature 3 — Audit Log Search + Security Dashboard
+
+- **Mục tiêu:** Admin tra cứu lịch sử + theo dõi chỉ số bảo mật
+- **Layer:** `AuditLogsController`, `Services/AuditLogService.cs`
+- **Tìm kiếm:** Lọc theo `User`, `Action`, `Result`, `DateFrom`, `DateTo` bằng LINQ + `AsNoTracking()`
+- **Dashboard (trang chủ Admin):** 3 chỉ số: số AccessDenied trong ngày, thao tác nhạy cảm, upload thất bại
+
+### Feature khuyến khích — API `/api/courses/search`
+
+- **Route:** `GET /api/courses/search?keyword=...`
+- **Validation:** `keyword` rỗng hoặc > 100 ký tự → `ValidationProblemDetails 400`
+- **Not Found:** Không có kết quả → `ProblemDetails 404` có `errorCode=COURSE_SEARCH_EMPTY` + `traceId`
+
+---
+
+## Observability
+
+| Endpoint | Mô tả |
+|----------|-------|
+| `/health/live` | Liveness — app đang chạy (luôn Healthy nếu process sống) |
+| `/health/ready` | Readiness — kiểm tra kết nối DB SQLite |
+| Logs | `logs/lab06-YYYYMMDD.txt` (Serilog rolling file) |
+| ProblemDetails | Mọi API error trả về RFC 7807 JSON có `traceId` + `errorCode` |
+
+---
+
+## Ghi chú về sử dụng AI
+
+Dự án này có sử dụng AI (GitHub Copilot / ChatGPT / Gemini) để hỗ trợ:
+- Sinh boilerplate code (ViewModel, Repository pattern)
+- Đề xuất cách xử lý concurrency với RowVersion
+- Gợi ý cấu trúc Audit Log Service
+- Refactor cơ chế theme (cookie-based single source of truth)
+
+**Tác giả hiểu và có thể giải thích toàn bộ code**, bao gồm:
+- Tại sao dùng `[ValidateAntiForgeryToken]` trên mọi POST action
+- Cách `RowVersion` hoạt động trong EF Core (`DbUpdateConcurrencyException`)
+- Tại sao `FileMode.CreateNew` an toàn hơn `FileMode.Create`
+- Sự khác biệt giữa `[Authorize(Policy=...)]` và `[Authorize(Roles=...)]`
+- Tại sao theme dùng cookie thay vì query string
+
+---
+
+## Tài liệu liên quan
+
+- 📋 [TEST_CHECKLIST.md](./TEST_CHECKLIST.md) — Bảng kiểm thử đầy đủ để demo
+- 🖼️ Ảnh minh chứng: `docs/images/lab06/` *(điền trong quá trình demo)*

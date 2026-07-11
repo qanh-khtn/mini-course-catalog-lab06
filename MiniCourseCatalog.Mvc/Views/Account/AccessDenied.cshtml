@@ -1,9 +1,18 @@
 @{
     ViewData["Title"] = "Từ chối truy cập";
+    var requiredPolicy = ViewData["RequiredPolicy"]?.ToString() ?? "Unknown";
+    var attemptedPath = ViewData["AttemptedPath"]?.ToString();
 }
 
 <div class="text-center mt-5">
     <h1 class="text-danger">Access Denied</h1>
-    <p class="lead">Bạn không có quyền truy cập vào trang này (Yêu cầu quyền phù hợp).</p>
+    <p class="lead">Bạn không có quyền truy cập vào trang này.</p>
+    <p class="text-muted">
+        Yêu cầu policy: <strong>@requiredPolicy</strong>
+        @if (!string.IsNullOrEmpty(attemptedPath))
+        {
+            <br /><span class="small">Đường dẫn: @attemptedPath</span>
+        }
+    </p>
     <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Trở về Trang chủ</a>
 </div>

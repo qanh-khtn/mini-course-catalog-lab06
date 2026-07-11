@@ -5,8 +5,13 @@ namespace MiniCourseCatalog.Mvc.ViewModels;
 
 public class AuditLogSearchViewModel
 {
-    [Display(Name = "Từ khóa (User/Action)")]
-    public string? Keyword { get; set; }
+    [Display(Name = "Người dùng")]
+    public string? User { get; set; }
+
+    // Đặt tên "ActionName" (không phải "Action") để tránh đụng route value "action" của MVC —
+    // model binder mặc định sẽ lấy nhầm tên action hiện tại (vd "Index") nếu trùng tên.
+    [Display(Name = "Hành động")]
+    public string? ActionName { get; set; }
 
     [Display(Name = "Kết quả")]
     public string? Result { get; set; }

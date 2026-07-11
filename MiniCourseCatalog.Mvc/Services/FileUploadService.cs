@@ -62,6 +62,31 @@ public class FileUploadService : IFileUploadService
         }
     }
 
+    public async Task<string> SaveCourseThumbnailAsync(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            throw new InvalidOperationException("Ảnh không hợp lệ.");
+
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowed.Contains(ext))
+            throw new InvalidOperationException("Định dạng ảnh không hợp lệ.");
+
+        if (file.Length > 2 * 1024 * 1024)
+            throw new InvalidOperationException("Ảnh vượt 2MB.");
+
+        var safeName = $"{Guid.NewGuid():N}{ext}";
+        var folder = Path.Combine(_env.WebRootPath, "uploads", "courses");
+        Directory.CreateDirectory(folder);
+
+        var fullPath = Path.Combine(folder, safeName);
+        using var fs = new FileStream(fullPath, FileMode.CreateNew);
+        await file.CopyToAsync(fs);
+
+        _logger.LogInformation("Course thumbnail saved at {Path}", fullPath);
+        return $"/uploads/courses/{safeName}";
+    }
+
     public bool DeleteFile(string relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath)) return false;

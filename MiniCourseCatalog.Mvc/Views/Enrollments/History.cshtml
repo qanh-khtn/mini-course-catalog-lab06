@@ -1,7 +1,6 @@
-@model List<MiniCourseCatalog.Mvc.Models.Enrollment>
+﻿@model List<MiniCourseCatalog.Mvc.Models.Enrollment>
 @{
     ViewData["Title"] = "Lịch Sử Đăng Ký";
-    var theme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="py-2">
@@ -10,7 +9,7 @@
             <h1 class="page-title">Lịch Sử Đăng Ký</h1>
             <p class="page-description">Toàn bộ lượt đăng ký học viên vào các khóa học.</p>
         </div>
-        <a asp-controller="Courses" asp-action="Enroll" asp-route-theme="@theme" class="btn app-btn app-btn-primary fw-bold px-4">
+        <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
             <i class="bi bi-person-plus me-2"></i>Đăng ký mới
         </a>
     </div>

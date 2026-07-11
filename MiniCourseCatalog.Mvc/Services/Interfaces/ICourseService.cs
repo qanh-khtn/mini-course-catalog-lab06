@@ -37,6 +37,7 @@ public interface ICourseService
     Task<CourseEditViewModel?> GetForEditAsync(int id);
     Task<CourseDeleteViewModel?> GetForDeleteAsync(int id);
     Task<CourseUpdateResult> UpdateAsync(CourseEditViewModel viewModel);
+    Task<CourseUpdateResult> UpdateThumbnailAsync(int id, string thumbnailPath);
     Task<bool> SoftDeleteAsync(int id);
     Task<List<CourseTrashItemViewModel>> GetTrashAsync();
     Task<bool> RestoreAsync(int id);
@@ -53,4 +54,7 @@ public interface ICourseService
 
     // --- Lab05 điểm cộng: xuất CSV danh sách khóa học đang hoạt động ---
     Task<string> ExportCoursesCsvAsync();
+
+    // --- Lab06: Catalog công khai (AllowAnonymous) ---
+    Task<List<CourseCatalogItemViewModel>> GetCatalogAsync();
 }

@@ -8,7 +8,6 @@ using MiniCourseCatalog.Mvc.ViewModels;
 
 namespace MiniCourseCatalog.Mvc.Controllers;
 
-[Authorize]
 public class CoursesController : Controller
 {
     private readonly ICourseService _courseService;
@@ -31,10 +30,9 @@ public class CoursesController : Controller
         _auditLogService = auditLogService;
     }
 
-    public async Task<IActionResult> Index(string keyword = "", string category = "", string theme = "light")
+    [Authorize(Policy = "CanViewCourse")]
+    public async Task<IActionResult> Index(string keyword = "", string category = "")
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var rawCourses = await _courseService.GetAllAsync();
         var categories = rawCourses
@@ -73,17 +71,15 @@ public class CoursesController : Controller
             Categories = categories,
             Keyword = keyword,
             Category = category,
-            Theme = theme,
             TotalCoursesBeforeFilter = rawCourses.Count
         };
 
         return View(viewModel);
     }
 
-    public async Task<IActionResult> Detail(int id, string theme = "light")
+    [Authorize(Policy = "CanViewCourse")]
+    public async Task<IActionResult> Detail(int id)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var course = await _courseService.GetByIdAsync(id);
         if (course == null)
@@ -105,10 +101,9 @@ public class CoursesController : Controller
         return View(detailVm);
     }
 
-    public async Task<IActionResult> Stats(string theme = "light")
+    [Authorize(Policy = "CanViewCourse")]
+    public async Task<IActionResult> Stats()
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var statsVm = await _courseService.GetStatsAsync();
         return View(statsVm);
@@ -116,6 +111,7 @@ public class CoursesController : Controller
 
     // Lab05 điểm cộng: xuất danh sách khóa học ra file CSV (UTF-8 BOM để Excel đọc đúng tiếng Việt)
     [HttpGet]
+    [Authorize(Policy = "CanViewCourse")]
     public async Task<IActionResult> Export()
     {
         var csv = await _courseService.ExportCoursesCsvAsync();
@@ -128,10 +124,9 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Filter(int? categoryId, decimal? minFee, decimal? maxFee, string theme = "light")
+    [Authorize(Policy = "CanViewCourse")]
+    public async Task<IActionResult> Filter(int? categoryId, decimal? minFee, decimal? maxFee)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var categories = await _courseService.GetCourseCategoriesAsync();
         var vm = new CourseFilterViewModel
@@ -139,7 +134,6 @@ public class CoursesController : Controller
             CategoryId = categoryId,
             MinFee = minFee,
             MaxFee = maxFee,
-            Theme = theme,
             Categories = categories,
             HasSearched = categoryId.HasValue || minFee.HasValue || maxFee.HasValue
         };
@@ -151,10 +145,9 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Search(string keyword = "", string category = "", string theme = "light")
+    [Authorize(Policy = "CanViewCourse")]
+    public async Task<IActionResult> Search(string keyword = "", string category = "")
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var results = (await _courseService.SearchAsync(keyword, category))
             .Select(c => new CourseListItemViewModel
@@ -174,7 +167,6 @@ public class CoursesController : Controller
         {
             Keyword = keyword,
             Category = category,
-            Theme = theme,
             Categories = await _courseService.GetCategoryNamesAsync(),
             Results = results
         };
@@ -184,10 +176,8 @@ public class CoursesController : Controller
 
     [HttpGet]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Create(string theme = "light")
+    public async Task<IActionResult> Create()
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var categories = await _courseService.GetCourseCategoriesAsync();
         var viewModel = new CourseCreateViewModel
@@ -205,10 +195,10 @@ public class CoursesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Create(CourseCreateViewModel viewModel, string theme = "light")
+    [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
+    [RequestSizeLimit(50 * 1024 * 1024)]
+    public async Task<IActionResult> Create(CourseCreateViewModel viewModel)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         // Custom validation nghiệp vụ: CourseCode là mã định danh duy nhất, không được trùng
         if (await _courseService.CodeExistsAsync(viewModel.Code))
@@ -229,7 +219,7 @@ public class CoursesController : Controller
         {
             try
             {
-                thumbnailPath = await _fileUploadService.UploadFileAsync(viewModel.Thumbnail, "images/thumbnails");
+                thumbnailPath = await _fileUploadService.SaveCourseThumbnailAsync(viewModel.Thumbnail);
             }
             catch (InvalidOperationException ex)
             {
@@ -256,15 +246,13 @@ public class CoursesController : Controller
         await _auditLogService.LogAsync("CreateCourse", "Course", course.Code, "Success");
 
         TempData["SuccessMessage"] = "Khóa học đã được tạo thành công.";
-        return RedirectToAction(nameof(Index), new { theme });
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
     [Authorize(Policy = "CanEnrollCourse")]
-    public async Task<IActionResult> Enroll(string theme = "light")
+    public async Task<IActionResult> Enroll()
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var vm = await BuildEnrollViewModelAsync();
         return View(vm);
@@ -273,10 +261,8 @@ public class CoursesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanEnrollCourse")]
-    public async Task<IActionResult> Enroll(EnrollViewModel viewModel, string theme = "light")
+    public async Task<IActionResult> Enroll(EnrollViewModel viewModel)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         if (!ModelState.IsValid)
         {
@@ -292,7 +278,7 @@ public class CoursesController : Controller
         {
             // PRG: redirect sau khi ghi thành công — toast hiện ở trang mới, F5 không submit lại form
             TempData["SuccessMessage"] = message;
-            return RedirectToAction(nameof(Enroll), new { theme });
+            return RedirectToAction(nameof(Enroll));
         }
 
         // Thất bại (hết chỗ / trùng / lỗi concurrency): giữ thông báo inline trên form
@@ -309,10 +295,8 @@ public class CoursesController : Controller
 
     [HttpGet]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Edit(int id, string theme = "light")
+    public async Task<IActionResult> Edit(int id)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var viewModel = await _courseService.GetForEditAsync(id);
         if (viewModel == null)
@@ -325,10 +309,8 @@ public class CoursesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Edit(int id, CourseEditViewModel viewModel, string theme = "light")
+    public async Task<IActionResult> Edit(int id, CourseEditViewModel viewModel)
     {
-        var currentTheme = NormalizeTheme(theme);
-        ViewData["Theme"] = currentTheme;
 
         if (id != viewModel.Id)
             return NotFound();
@@ -347,47 +329,18 @@ public class CoursesController : Controller
             return View(viewModel);
         }
 
-        string? thumbnailPath = viewModel.ExistingThumbnailPath;
-        if (viewModel.Thumbnail != null)
-        {
-            try
-            {
-                var newPath = await _fileUploadService.UploadFileAsync(viewModel.Thumbnail, "images/thumbnails");
-                if (!string.IsNullOrEmpty(newPath))
-                {
-                    // Xóa ảnh cũ nếu có
-                    if (!string.IsNullOrEmpty(thumbnailPath))
-                    {
-                        _fileUploadService.DeleteFile(thumbnailPath);
-                    }
-                    thumbnailPath = newPath;
-                    await _auditLogService.LogAsync("UploadThumbnail", "Course", viewModel.Code, "Success");
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                await _auditLogService.LogAsync("UploadThumbnail", "Course", viewModel.Code, "Fail", ex.Message);
-                ModelState.AddModelError(nameof(viewModel.Thumbnail), ex.Message);
-                await PopulateCategoryOptionsAsync(viewModel);
-                return View(viewModel);
-            }
-        }
-        
-        // Pass thumbnailPath to service
-        viewModel.ExistingThumbnailPath = thumbnailPath;
-
         var result = await _courseService.UpdateAsync(viewModel);
         switch (result)
         {
             case CourseUpdateResult.Success:
                 await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Success");
                 TempData["SuccessMessage"] = "Cập nhật khóa học thành công.";
-                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+                return RedirectToAction(nameof(Index));
             
             case CourseUpdateResult.NotFound:
                 await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Fail", "Course not found");
                 TempData["ErrorMessage"] = "Không tìm thấy khóa học cần cập nhật.";
-                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+                return RedirectToAction(nameof(Index));
             
             case CourseUpdateResult.ConcurrencyConflict:
                 await _auditLogService.LogAsync("EditCourse", "Course", viewModel.Code, "Fail", "Concurrency conflict");
@@ -401,14 +354,59 @@ public class CoursesController : Controller
         }
     }
 
+    // ---------- Lab06 Feature 2: Thay thumbnail fault-tolerant ----------
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Policy = "CanUploadCourseThumbnail")]
+    [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
+    [RequestSizeLimit(50 * 1024 * 1024)]
+    public async Task<IActionResult> UploadThumbnail(int id, IFormFile thumbnail)
+    {
+
+        var course = await _courseService.GetByIdAsync(id);
+        if (course == null)
+            return NotFound($"Không thể tìm thấy khóa học với mã ID = {id}");
+
+        var oldPath = course.ThumbnailPath;
+        string? newPath = null;
+
+        try
+        {
+            newPath = await _fileUploadService.SaveCourseThumbnailAsync(thumbnail);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await _auditLogService.LogAsync("ReplaceCourseThumbnail", "Course", id.ToString(), "Fail", ex.Message);
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Edit), new { id });
+        }
+
+        var result = await _courseService.UpdateThumbnailAsync(id, newPath);
+        if (result == CourseUpdateResult.Success)
+        {
+            await _auditLogService.LogAsync("ReplaceCourseThumbnail", "Course", id.ToString(), "Success");
+            if (!string.IsNullOrEmpty(oldPath))
+                _fileUploadService.DeleteFile(oldPath);
+            TempData["SuccessMessage"] = "Ảnh thumbnail đã được cập nhật thành công.";
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(newPath))
+                _fileUploadService.DeleteFile(newPath);
+            await _auditLogService.LogAsync("ReplaceCourseThumbnail", "Course", id.ToString(), "Fail", "Database update failed");
+            TempData["ErrorMessage"] = "Lỗi khi lưu vào cơ sở dữ liệu. Ảnh cũ được giữ nguyên.";
+        }
+
+        return RedirectToAction(nameof(Edit), new { id });
+    }
+
     // ---------- Lab05: Delete confirmation -> soft delete ----------
 
     [HttpGet]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Delete(int id, string theme = "light")
+    public async Task<IActionResult> Delete(int id)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var viewModel = await _courseService.GetForDeleteAsync(id);
         if (viewModel == null)
@@ -420,9 +418,8 @@ public class CoursesController : Controller
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> DeleteConfirmed(int id, string theme = "light")
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        theme = NormalizeTheme(theme);
 
         var success = await _courseService.SoftDeleteAsync(id);
         if (success)
@@ -435,17 +432,15 @@ public class CoursesController : Controller
             await _auditLogService.LogAsync("DeleteCourse", "Course", id.ToString(), "Fail", "Not found");
             TempData["ErrorMessage"] = "Không tìm thấy khóa học để xóa.";
         }
-        return RedirectToAction(nameof(Index), new { theme });
+        return RedirectToAction(nameof(Index));
     }
 
     // ---------- Lab05 Feature 2: Điều chỉnh sĩ số (RowVersion) ----------
 
     [HttpGet]
     [Authorize(Policy = "CanAdjustSeats")]
-    public async Task<IActionResult> AdjustSeats(int id, string theme = "light")
+    public async Task<IActionResult> AdjustSeats(int id)
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var viewModel = await _courseService.GetForAdjustSeatsAsync(id);
         if (viewModel == null)
@@ -457,10 +452,8 @@ public class CoursesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanAdjustSeats")]
-    public async Task<IActionResult> AdjustSeats(int id, CourseAdjustSeatsViewModel viewModel, string theme = "light")
+    public async Task<IActionResult> AdjustSeats(int id, CourseAdjustSeatsViewModel viewModel)
     {
-        var currentTheme = NormalizeTheme(theme);
-        ViewData["Theme"] = currentTheme;
 
         if (id != viewModel.Id)
             return NotFound();
@@ -474,12 +467,12 @@ public class CoursesController : Controller
             case CourseAdjustResult.Success:
                 await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Success");
                 TempData["SuccessMessage"] = "Đã cập nhật sĩ số thành công.";
-                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+                return RedirectToAction(nameof(Index));
             
             case CourseAdjustResult.NotFound:
                 await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Fail", "Not found");
                 TempData["ErrorMessage"] = "Không tìm thấy khóa học.";
-                return RedirectToAction(nameof(Index), new { theme = currentTheme });
+                return RedirectToAction(nameof(Index));
             
             case CourseAdjustResult.ExceedsCapacity:
                 await _auditLogService.LogAsync("AdjustSeats", "Course", viewModel.Code, "Fail", "Exceeds capacity");
@@ -507,10 +500,8 @@ public class CoursesController : Controller
 
     [HttpGet]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Trash(string theme = "light")
+    public async Task<IActionResult> Trash()
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var items = await _courseService.GetTrashAsync();
         return View(items);
@@ -519,61 +510,76 @@ public class CoursesController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> Restore(int id, string theme = "light")
+    public async Task<IActionResult> Restore(int id)
     {
-        theme = NormalizeTheme(theme);
 
         var ok = await _courseService.RestoreAsync(id);
         if (ok)
         {
-            await _auditLogService.LogAsync("Restore", "Course", id.ToString(), "Success");
+            await _auditLogService.LogAsync("RestoreCourse", "Course", id.ToString(), "Success");
             TempData["SuccessMessage"] = "Đã khôi phục khóa học về danh sách hoạt động.";
         }
         else
         {
-            await _auditLogService.LogAsync("Restore", "Course", id.ToString(), "Fail", "Not found");
+            await _auditLogService.LogAsync("RestoreCourse", "Course", id.ToString(), "Fail", "Not found");
             TempData["ErrorMessage"] = "Không tìm thấy khóa học để khôi phục.";
         }
-        return RedirectToAction(nameof(Trash), new { theme });
+        return RedirectToAction(nameof(Trash));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "CanManageCourse")]
-    public async Task<IActionResult> HardDelete(int id, string theme = "light")
+    // HardDelete là thao tác phá hủy không thể hoàn tác — gắn cứng với role Admin
+    // thay vì policy nghiệp vụ để đảm bảo chỉ Admin thực sự mới xóa được vĩnh viễn.
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> HardDelete(int id)
     {
-        theme = NormalizeTheme(theme);
 
         var ok = await _courseService.HardDeleteAsync(id);
         TempData[ok ? "SuccessMessage" : "ErrorMessage"] = ok
             ? "Đã xóa vĩnh viễn khóa học khỏi hệ thống."
             : "Không tìm thấy khóa học trong thùng rác.";
-        return RedirectToAction(nameof(Trash), new { theme });
+        return RedirectToAction(nameof(Trash));
     }
 
     [HttpGet]
     [Authorize(Policy = "CanViewAuditLog")]
-    public async Task<IActionResult> AuditLog(string theme = "light")
+    public async Task<IActionResult> AuditLog()
     {
-        theme = NormalizeTheme(theme);
-        ViewData["Theme"] = theme;
 
         var items = await _courseService.GetAuditLogAsync();
         return View(items);
     }
 
+    [AllowAnonymous]
     public IActionResult Welcome() =>
         Content("Hệ thống quản lý đào tạo Mini Training Center xin chào học viên!");
 
+    /// <summary>
+    /// Trang danh mục khóa học công khai — không yêu cầu đăng nhập.
+    /// Hiển thị toàn bộ khóa học chưa bị soft-delete kèm thumbnail và thông tin cơ bản.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> Catalog()
+    {
+        var items = await _courseService.GetCatalogAsync();
+        return View(items);
+    }
+
+    [Authorize(Policy = "CanViewCourse")]
     public async Task<IActionResult> CourseJson() =>
         Json(await _courseService.GetAllAsync());
 
+    [Authorize(Policy = "CanViewCourse")]
     public IActionResult GoToList() =>
         RedirectToAction(nameof(Index));
 
+    [AllowAnonymous]
     public IActionResult Force404() =>
         NotFound("Đây là trang phản hồi mẫu 404 thử nghiệm từ hệ thống.");
 
+    [AllowAnonymous]
     public IActionResult CategoryInfo() =>
         Content("Xem danh mục tại /DataHealth");
 
@@ -585,8 +591,7 @@ public class CoursesController : Controller
             .ToList();
     }
 
-    private static string NormalizeTheme(string theme) =>
-        string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? "dark" : "light";
+
 
     private async Task<EnrollViewModel> BuildEnrollViewModelAsync()
     {

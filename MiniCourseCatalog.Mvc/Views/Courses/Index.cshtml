@@ -1,7 +1,6 @@
 @model CourseIndexViewModel
 @{
     ViewData["Title"] = "Danh Mục Khóa Học";
-    var currentTheme = Model.Theme;
 }
 
 <div class="container py-4 course-page">
@@ -12,7 +11,7 @@
         </div>
         <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-md-end">
             <a class="btn app-btn app-btn-ghost shadow-sm fw-bold px-4 py-2" asp-controller="Courses" asp-action="Export"><i class="bi bi-filetype-csv me-2"></i>Xuất CSV</a>
-            <a class="btn app-btn app-btn-primary shadow-sm fw-bold px-4 py-2" asp-controller="Courses" asp-action="Stats" asp-route-theme="@currentTheme"><i class="bi bi-bar-chart-fill me-2"></i>Báo Cáo</a>
+            <a class="btn app-btn app-btn-primary shadow-sm fw-bold px-4 py-2" asp-controller="Courses" asp-action="Stats"><i class="bi bi-bar-chart-fill me-2"></i>Báo Cáo</a>
         </div>
     </div>
 
@@ -24,7 +23,7 @@
 
     @if (Model.Courses.Count == 0)
     {
-        <div class="empty-state text-center p-5 rounded-4"><div class="display-6 fw-bold mb-2">Không tìm thấy khóa học</div><p class="text-muted mb-4">Thử đổi từ khóa hoặc chọn lại chuyên ngành để xem dữ liệu phù hợp hơn.</p><a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme" class="btn app-btn app-btn-primary fw-bold">Xem toàn bộ khóa học</a></div>
+        <div class="empty-state text-center p-5 rounded-4"><div class="display-6 fw-bold mb-2">Không tìm thấy khóa học</div><p class="text-muted mb-4">Thử đổi từ khóa hoặc chọn lại chuyên ngành để xem dữ liệu phù hợp hơn.</p><a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-primary fw-bold">Xem toàn bộ khóa học</a></div>
     }
     else
     {

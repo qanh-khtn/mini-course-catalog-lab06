@@ -13,6 +13,11 @@ public interface IFileUploadService
     Task<string> UploadFileAsync(IFormFile file, string subFolder = "uploads", int maxSizeMb = 5, string[]? allowedExtensions = null);
 
     /// <summary>
+    /// Lưu thumbnail khóa học an toàn (whitelist, 2MB, Guid, CreateNew).
+    /// </summary>
+    Task<string> SaveCourseThumbnailAsync(IFormFile file);
+
+    /// <summary>
     /// Xóa file trên đĩa
     /// </summary>
     bool DeleteFile(string relativePath);

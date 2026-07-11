@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Audit Logs";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="container py-4">
@@ -15,18 +14,20 @@
 
     <div class="card shadow-sm rounded-4 p-4 mb-4">
         <form method="get" class="row g-3">
-            <input type="hidden" name="theme" value="@currentTheme" />
             <div class="col-md-3">
-                <label asp-for="Keyword" class="form-label fw-bold"></label>
-                <input asp-for="Keyword" class="form-control" placeholder="User, Action..." />
+                <label asp-for="User" class="form-label fw-bold"></label>
+                <input asp-for="User" class="form-control" placeholder="admin@coursecenter.test" />
             </div>
             <div class="col-md-3">
+                <label asp-for="ActionName" class="form-label fw-bold"></label>
+                <input asp-for="ActionName" class="form-control" placeholder="AdjustSeats" />
+            </div>
+            <div class="col-md-2">
                 <label asp-for="Result" class="form-label fw-bold"></label>
                 <select asp-for="Result" class="form-select">
                     <option value="">-- Tất cả --</option>
                     <option value="Success">Success</option>
                     <option value="Fail">Fail</option>
-                    <option value="AccessDenied">AccessDenied</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -37,8 +38,8 @@
                 <label asp-for="ToDate" class="form-label fw-bold"></label>
                 <input asp-for="ToDate" class="form-control" />
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
+            <div class="col-12 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary px-4">
                     <i class="bi bi-search me-2"></i>Tìm kiếm
                 </button>
             </div>

@@ -1,7 +1,6 @@
 @model MiniCourseCatalog.Mvc.ViewModels.SecurityDashboardViewModel?
 @{
     ViewData["Title"] = "Trang Chủ";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="lab-hero">
@@ -15,14 +14,14 @@
     </h1>
     <p>Hệ thống quản lý nội bộ Trung tâm Đào tạo.<br />Xem danh sách khóa học, tuyển sinh và doanh thu dự kiến.</p>
     <a class="btn app-btn app-btn-primary btn-lg px-5 py-3 fw-bold mt-2"
-       href="/Courses?theme=@currentTheme">
+       asp-controller="Courses" asp-action="Index">
         <i class="bi bi-grid-1x2-fill me-2"></i>Xem Khóa Học
     </a>
 </div>
 
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-lg-3">
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme" class="text-decoration-none">
+        <a asp-controller="Courses" asp-action="Index" class="text-decoration-none">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
                 <div class="rounded-3 p-2 bg-primary bg-opacity-10 mb-3 d-inline-flex">
                     <i class="bi bi-journal-richtext text-primary fs-4"></i>
@@ -33,7 +32,7 @@
         </a>
     </div>
     <div class="col-sm-6 col-lg-3">
-        <a asp-controller="Courses" asp-action="Stats" asp-route-theme="@currentTheme" class="text-decoration-none">
+        <a asp-controller="Courses" asp-action="Stats" class="text-decoration-none">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
                 <div class="rounded-3 p-2 bg-success bg-opacity-10 mb-3 d-inline-flex">
                     <i class="bi bi-bar-chart-fill text-success fs-4"></i>
@@ -98,7 +97,7 @@
             </a>
         </div>
         <div class="col-sm-4">
-            <a asp-controller="AuditLogs" asp-action="Index" asp-route-Action="UploadThumbnail" asp-route-Result="Fail" class="text-decoration-none">
+            <a asp-controller="AuditLogs" asp-action="Index" asp-route-Action="ReplaceCourseThumbnail" asp-route-Result="Fail" class="text-decoration-none">
                 <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow bg-warning text-dark">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

@@ -1,148 +1,170 @@
 @model CourseFilterViewModel
 @{
     ViewData["Title"] = "Lọc Khóa Học";
-    var theme = ViewData["Theme"]?.ToString() ?? "light";
+    int activeFilters = (Model.CategoryId.HasValue ? 1 : 0) + (Model.MinFee.HasValue ? 1 : 0) + (Model.MaxFee.HasValue ? 1 : 0);
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <h2 class="fw-bold mb-0"><i class="bi bi-funnel-fill text-primary me-2"></i>Lọc Khóa Học</h2>
-        <p class="text-muted small mb-0 mt-1">Lọc khóa học theo chuyên ngành và khoảng học phí.</p>
+        <p class="text-muted small mb-0 mt-1">Tìm kiếm khóa học phù hợp với nhu cầu và ngân sách của bạn.</p>
     </div>
-    <a asp-controller="Courses" asp-action="Index" asp-route-theme="@theme" class="btn app-btn app-btn-secondary btn-sm">
+    <a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i>Danh sách
     </a>
 </div>
 
-<div class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body p-4">
-        <form method="get" asp-action="Filter" asp-route-theme="@theme" class="row g-3 align-items-end">
-            <input type="hidden" name="theme" value="@theme" />
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold small">Chuyên ngành</label>
-                <select name="categoryId" class="form-select form-select-sm rounded-3">
-                    <option value="">— Tất cả chuyên ngành —</option>
-                    @foreach (var cat in Model.Categories)
+<div class="row g-4 align-items-start">
+    <div class="col-lg-3">
+        <!-- Sidebar Filter -->
+        <div class="card border-0 shadow-sm rounded-4 sticky-lg-top" style="background: var(--surface); top: 20px;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold mb-0">Bộ lọc</h6>
+                    @if (activeFilters > 0)
                     {
-                        <option value="@cat.Id" selected="@(Model.CategoryId == cat.Id)">@cat.Name</option>
+                        <span class="badge bg-primary rounded-pill">@activeFilters đang áp dụng</span>
                     }
-                </select>
+                </div>
+
+                <form method="get" asp-action="Filter" class="d-flex flex-column gap-3">
+
+                    <div>
+                        <label class="form-label fw-semibold small text-muted text-uppercase">Chuyên ngành</label>
+                        <select name="categoryId" class="form-select rounded-3">
+                            <option value="">Tất cả chuyên ngành</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat.Id" selected="@(Model.CategoryId == cat.Id)">@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-semibold small text-muted text-uppercase">Học phí tối thiểu (VNĐ)</label>
+                        <input type="number" name="minFee" value="@Model.MinFee" class="form-control rounded-3"
+                               placeholder="VD: 1000000" min="0" step="100000" />
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-semibold small text-muted text-uppercase">Học phí tối đa (VNĐ)</label>
+                        <input type="number" name="maxFee" value="@Model.MaxFee" class="form-control rounded-3"
+                               placeholder="VD: 4000000" min="0" step="100000" />
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="submit" class="btn app-btn app-btn-primary w-100 fw-bold mb-2">
+                            <i class="bi bi-funnel me-1"></i>Áp dụng lọc
+                        </button>
+                        @if (activeFilters > 0)
+                        {
+                            <a href="@Url.Action("Filter", "Courses")" class="btn app-btn app-btn-ghost text-danger w-100">
+                                <i class="bi bi-x-circle me-1"></i>Xóa tất cả bộ lọc
+                            </a>
+                        }
+                    </div>
+                </form>
             </div>
-
-            <div class="col-md-3">
-                <label class="form-label fw-semibold small">Học phí từ (VNĐ)</label>
-                <input type="number" name="minFee" value="@Model.MinFee" class="form-control form-control-sm rounded-3"
-                       placeholder="vd: 1000000" min="0" step="100000" />
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label fw-semibold small">Học phí đến (VNĐ)</label>
-                <input type="number" name="maxFee" value="@Model.MaxFee" class="form-control form-control-sm rounded-3"
-                       placeholder="vd: 4000000" min="0" step="100000" />
-            </div>
-
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn app-btn app-btn-primary btn-sm flex-grow-1">
-                    <i class="bi bi-funnel me-1"></i>Lọc
-                </button>
-                <a href="@Url.Action("Filter", "Courses", new { theme })" class="btn app-btn app-btn-secondary btn-sm" title="Xóa bộ lọc">
-                    <i class="bi bi-x-lg"></i>
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-@if (!Model.HasSearched)
-{
-    <div class="text-center py-5 text-muted">
-        <i class="bi bi-funnel fs-1 d-block mb-3 opacity-25"></i>
-        <p>Chọn bộ lọc phía trên và nhấn <strong>Lọc</strong> để xem kết quả.</p>
-        <p class="small">Chọn bộ lọc phía trên và nhấn <strong>Lọc</strong> để xem kết quả.</p>
-    </div>
-}
-else
-{
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <h5 class="fw-bold mb-0">
-            Kết quả
-            <span class="badge bg-primary rounded-pill ms-1">@Model.Results.Count</span>
-        </h5>
-        <span class="text-muted small font-monospace">
-            /Courses/Filter?@(Model.CategoryId.HasValue ? $"categoryId={Model.CategoryId}&" : "")@(Model.MinFee.HasValue ? $"minFee={Model.MinFee}&" : "")@(Model.MaxFee.HasValue ? $"maxFee={Model.MaxFee}" : "")
-        </span>
-    </div>
-
-    @if (!Model.Results.Any())
-    {
-        <div class="text-center py-4">
-            <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
-            <p class="text-muted">Không tìm thấy khóa học nào khớp với bộ lọc.</p>
         </div>
-    }
-    else
-    {
-        <div class="row g-3">
-            @foreach (var course in Model.Results)
+    </div>
+
+    <div class="col-lg-9">
+        <!-- Results Area -->
+        @if (!Model.HasSearched)
+        {
+            <div class="card border-0 shadow-sm rounded-4 h-100 d-flex align-items-center justify-content-center" style="background: var(--surface); min-height: 400px;">
+                <div class="text-center p-5 text-muted">
+                    <i class="bi bi-funnel fs-1 d-block mb-3 opacity-25"></i>
+                    <h5 class="fw-bold text-body">Bạn chưa chọn bộ lọc</h5>
+                    <p class="mb-0">Vui lòng sử dụng thanh công cụ bên trái để bắt đầu tìm kiếm khóa học.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <h5 class="fw-bold mb-0">
+                    Kết quả tìm kiếm
+                    <span class="badge bg-primary rounded-pill ms-2">@Model.Results.Count</span>
+                </h5>
+                <span class="text-muted small font-monospace">
+                    /Courses/Filter?@(Model.CategoryId.HasValue ? $"categoryId={Model.CategoryId}&" : "")@(Model.MinFee.HasValue ? $"minFee={Model.MinFee}&" : "")@(Model.MaxFee.HasValue ? $"maxFee={Model.MaxFee}" : "")
+                </span>
+            </div>
+
+            @if (!Model.Results.Any())
             {
-                var seatLeft = course.MaxCapacity - course.CurrentEnrollment;
-                var pct = course.MaxCapacity > 0 ? (double)course.CurrentEnrollment / course.MaxCapacity * 100 : 0;
-                var barColor = seatLeft == 0 ? "bg-danger" : seatLeft <= 3 ? "bg-warning" : "bg-success";
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 course-card">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-start justify-content-between mb-2">
-                                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-monospace">@course.Code</span>
-                                @if (seatLeft == 0)
-                                {
-                                    <span class="badge bg-danger rounded-pill">Đầy</span>
-                                }
-                                else if (seatLeft <= 3)
-                                {
-                                    <span class="badge bg-warning text-dark rounded-pill">Sắp đầy</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-success rounded-pill">Còn chỗ</span>
-                                }
-                            </div>
-                            <h6 class="fw-bold mb-1">@course.Name</h6>
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-diagram-3 me-1 text-info"></i>@course.Category
-                                <span class="mx-1">·</span>
-                                <i class="bi bi-person me-1"></i>@course.Instructor
-                            </p>
-                            <div class="mb-2">
-                                <div class="d-flex justify-content-between small mb-1">
-                                    <span class="text-muted">Sĩ số</span>
-                                    <span class="fw-semibold">@course.CurrentEnrollment/@course.MaxCapacity</span>
-                                </div>
-                                <div class="progress" style="height:5px;">
-                                    <div class="progress-bar @barColor" style="width:@pct.ToString("F0")%"></div>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between mt-3">
-                                <span class="fw-bold text-primary">@course.TuitionFee.ToString("N0") ₫</span>
-                                <a asp-controller="Courses" asp-action="Detail" asp-route-id="@course.Id"
-                                   asp-route-theme="@theme" class="btn app-btn app-btn-primary btn-sm">
-                                    Xem chi tiết
-                                </a>
-                            </div>
-                        </div>
+                <div class="card border-0 shadow-sm rounded-4 d-flex align-items-center justify-content-center" style="background: var(--surface); min-height: 300px;">
+                    <div class="text-center p-4">
+                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3 opacity-50"></i>
+                        <h6 class="fw-bold">Không tìm thấy khóa học</h6>
+                        <p class="text-muted small mb-0">Hãy thử nới lỏng khoảng học phí hoặc đổi chuyên ngành.</p>
                     </div>
                 </div>
             }
-        </div>
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var course in Model.Results)
+                    {
+                        var seatLeft = course.MaxCapacity - course.CurrentEnrollment;
+                        var pct = course.MaxCapacity > 0 ? (double)course.CurrentEnrollment / course.MaxCapacity * 100 : 0;
+                        var barColor = seatLeft == 0 ? "bg-danger" : seatLeft <= 3 ? "bg-warning" : "bg-success";
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 course-card">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-monospace">@course.Code</span>
+                                        @if (seatLeft == 0)
+                                        {
+                                            <span class="badge bg-danger rounded-pill">Đầy</span>
+                                        }
+                                        else if (seatLeft <= 3)
+                                        {
+                                            <span class="badge bg-warning text-dark rounded-pill">Sắp đầy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success rounded-pill">Còn chỗ</span>
+                                        }
+                                    </div>
+                                    <h6 class="fw-bold mb-1">@course.Name</h6>
+                                    <p class="text-muted small mb-3">
+                                        <i class="bi bi-diagram-3 me-1 text-info"></i>@course.Category
+                                        <span class="mx-1">·</span>
+                                        <i class="bi bi-person me-1"></i>@course.Instructor
+                                    </p>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between small mb-1">
+                                            <span class="text-muted">Sĩ số</span>
+                                            <span class="fw-semibold">@course.CurrentEnrollment/@course.MaxCapacity</span>
+                                        </div>
+                                        <div class="progress" style="height:5px;">
+                                            <div class="progress-bar @barColor" style="width:@pct.ToString("F0")%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between mt-auto">
+                                        <span class="fw-bold text-primary">@course.TuitionFee.ToString("N0") ₫</span>
+                                        <a asp-controller="Courses" asp-action="Detail" asp-route-id="@course.Id" class="btn app-btn app-btn-primary btn-sm">
+                                            Xem chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
 
-        <div class="mt-4 p-3 rounded-3 border small font-monospace text-muted" style="background:var(--app-surface)">
-            <i class="bi bi-database me-1 text-primary"></i>
-            <strong>EF Core query:</strong>
-            _context.Courses.Include(c =&gt; c.CourseCategory)
-            @if (Model.CategoryId.HasValue) { <text>.Where(c =&gt; c.CourseCategoryId == @Model.CategoryId)</text> }
-            @if (Model.MinFee.HasValue) { <text>.Where(c =&gt; c.TuitionFee &gt;= @Model.MinFee)</text> }
-            @if (Model.MaxFee.HasValue) { <text>.Where(c =&gt; c.TuitionFee &lt;= @Model.MaxFee)</text> }
-            .AsNoTracking().OrderBy(c =&gt; c.TuitionFee).ToListAsync()
-        </div>
-    }
-}
+                <div class="mt-4 p-3 rounded-4 border small font-monospace text-muted" style="background:var(--app-surface)">
+                    <i class="bi bi-database me-1 text-primary"></i>
+                    <strong>EF Core query:</strong>
+                    _context.Courses.Include(c =&gt; c.CourseCategory)
+                    @if (Model.CategoryId.HasValue) { <text>.Where(c =&gt; c.CourseCategoryId == @Model.CategoryId)</text> }
+                    @if (Model.MinFee.HasValue) { <text>.Where(c =&gt; c.TuitionFee &gt;= @Model.MinFee)</text> }
+                    @if (Model.MaxFee.HasValue) { <text>.Where(c =&gt; c.TuitionFee &lt;= @Model.MaxFee)</text> }
+                    .AsNoTracking().OrderBy(c =&gt; c.TuitionFee).ToListAsync()
+                </div>
+            }
+        }
+    </div>
+</div>

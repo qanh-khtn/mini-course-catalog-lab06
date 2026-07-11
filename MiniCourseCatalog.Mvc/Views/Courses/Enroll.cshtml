@@ -1,57 +1,80 @@
 @model EnrollViewModel
 @{
     ViewData["Title"] = "Đăng Ký Khóa Học";
-    var theme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
-<div class="py-2">
-    <div class="page-header mb-4">
-        <div>
-            <h1 class="page-title">Đăng Ký Khóa Học</h1>
-            <p class="page-description">Đăng ký học viên vào khóa học. Hệ thống tự động kiểm tra số chỗ trống trước khi xác nhận.</p>
+<div class="auth-split-card mt-3">
+    <!-- Left Side: Information -->
+    <div class="auth-split-left" style="background: linear-gradient(135deg, #4f46e5, #0ea5e9);">
+        <div class="auth-brand-logo mb-5">
+            <i class="bi bi-person-plus-fill text-white" style="background: none; -webkit-text-fill-color: white;"></i> Đăng Ký Học
         </div>
-        <a asp-controller="Enrollments" asp-action="History" class="btn app-btn app-btn-ghost fw-bold px-4">
-            <i class="bi bi-clock-history me-2"></i>Lịch sử đăng ký
-        </a>
+        
+        <div class="auth-left-content">
+            <h1 class="auth-left-title">Ghi danh<br/>nhanh chóng.</h1>
+            <p class="text-white-50 mt-3" style="font-size: 0.95rem; line-height: 1.6;">
+                Hệ thống tự động kiểm tra sĩ số và cập nhật danh sách học viên theo thời gian thực.
+            </p>
+            
+            <ul class="auth-feature-list mt-4">
+                <li class="auth-feature-item">
+                    <i class="bi bi-check2-circle text-white"></i> Kiểm tra sức chứa lớp học
+                </li>
+                <li class="auth-feature-item">
+                    <i class="bi bi-check2-circle text-white"></i> Cập nhật Audit Log ngay lập tức
+                </li>
+            </ul>
+        </div>
+        
+        <div class="mt-5 pt-3 border-top border-light border-opacity-10 d-flex justify-content-between align-items-center">
+             <a asp-controller="Enrollments" asp-action="History" class="text-white-50 text-decoration-none small hover-white transition-all">
+                <i class="bi bi-clock-history me-1"></i> Lịch sử đăng ký
+            </a>
+        </div>
     </div>
 
-    @if (Model.IsSuccess.HasValue)
-    {
-        <div class="alert @(Model.IsSuccess.Value ? "alert-success" : "alert-danger") alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4" role="alert">
-            <i class="bi @(Model.IsSuccess.Value ? "bi-check-circle-fill" : "bi-x-circle-fill") me-2"></i>
-            @Model.ResultMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+    <!-- Right Side: Form -->
+    <div class="auth-split-right">
+        <h4 class="fw-bold mb-4">Thông tin đăng ký</h4>
+        
+        @if (Model.IsSuccess.HasValue)
+        {
+            <div class="alert @(Model.IsSuccess.Value ? "alert-success bg-success bg-opacity-10 text-success" : "alert-danger bg-danger bg-opacity-10 text-danger") alert-dismissible fade show rounded-4 border-0 mb-4" role="alert">
+                <i class="bi @(Model.IsSuccess.Value ? "bi-check-circle-fill" : "bi-x-circle-fill") me-2"></i>
+                @Model.ResultMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="max-width:560px;">
         <form asp-controller="Courses" asp-action="Enroll" method="post">
             @Html.AntiForgeryToken()
-            <input type="hidden" name="theme" value="@theme" />
-            <div asp-validation-summary="ModelOnly" class="validation-summary-errors text-danger mb-3"></div>
-
-            <div class="mb-3">
-                <label asp-for="CourseId" class="form-label">Khóa học</label>
-                <select asp-for="CourseId" asp-items="Model.CourseOptions" class="form-select">
-                    <option value="0">-- Chọn khóa học --</option>
-                </select>
-                <span asp-validation-for="CourseId" class="text-danger small"></span>
-            </div>
+            <div asp-validation-summary="ModelOnly"></div>
 
             <div class="mb-4">
-                <label asp-for="StudentId" class="form-label">Học viên</label>
-                <select asp-for="StudentId" asp-items="Model.StudentOptions" class="form-select">
+                <label asp-for="CourseId" class="form-label text-muted small fw-bold text-uppercase">Khóa học</label>
+                <select asp-for="CourseId" asp-items="Model.CourseOptions" class="form-select form-select-lg border-0 shadow-sm rounded-3" style="background: var(--app-bg); font-size:0.95rem;">
+                    <option value="0">-- Chọn khóa học --</option>
+                </select>
+                <span asp-validation-for="CourseId" class="field-validation-error"></span>
+            </div>
+
+            <div class="mb-5">
+                <label asp-for="StudentId" class="form-label text-muted small fw-bold text-uppercase">Học viên</label>
+                <select asp-for="StudentId" asp-items="Model.StudentOptions" class="form-select form-select-lg border-0 shadow-sm rounded-3" style="background: var(--app-bg); font-size:0.95rem;">
                     <option value="0">-- Chọn học viên --</option>
                 </select>
-                <span asp-validation-for="StudentId" class="text-danger small"></span>
+                <span asp-validation-for="StudentId" class="field-validation-error"></span>
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4">
-                    <i class="bi bi-person-check me-2"></i>Đăng ký
+                <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4 flex-grow-1">
+                    <i class="bi bi-person-check me-2"></i>Xác nhận đăng ký
                 </button>
-                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@theme" class="btn app-btn app-btn-ghost fw-bold px-4">
-                    <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </div>
+            
+            <div class="text-center mt-4">
+                <a asp-controller="Courses" asp-action="Index" class="text-muted text-decoration-none small fw-semibold auth-link">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
                 </a>
             </div>
         </form>

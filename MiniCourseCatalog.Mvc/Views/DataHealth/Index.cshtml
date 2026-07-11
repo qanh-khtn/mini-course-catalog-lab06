@@ -1,7 +1,6 @@
-@model DataHealthViewModel
+﻿@model DataHealthViewModel
 @{
     ViewData["Title"] = "DB Health";
-    var theme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="py-2">
@@ -10,7 +9,7 @@
             <h1 class="page-title">EF Core Data Health</h1>
             <p class="page-description">Kiểm tra trạng thái Migration, Seed Data, AsNoTracking và Transaction.</p>
         </div>
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@theme" class="btn app-btn app-btn-ghost fw-bold px-4">
+        <a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-ghost fw-bold px-4">
             <i class="bi bi-arrow-left me-2"></i>Khóa học
         </a>
     </div>

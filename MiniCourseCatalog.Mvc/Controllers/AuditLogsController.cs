@@ -16,18 +16,22 @@ public class AuditLogsController : Controller
         _auditLogService = auditLogService;
     }
 
-    public async Task<IActionResult> Index(AuditLogSearchViewModel model, string theme = "light")
+    public async Task<IActionResult> Index(AuditLogSearchViewModel model)
     {
-        ViewData["Theme"] = theme;
 
         var query = _auditLogService.GetQueryable();
 
-        if (!string.IsNullOrWhiteSpace(model.Keyword))
+        if (!string.IsNullOrWhiteSpace(model.User))
         {
-            var keyword = model.Keyword.Trim().ToLower();
-            query = query.Where(a => 
-                (a.UserName != null && a.UserName.ToLower().Contains(keyword)) ||
-                a.Action.ToLower().Contains(keyword));
+            var user = model.User.Trim().ToLower();
+            query = query.Where(a =>
+                a.UserName != null && a.UserName.ToLower().Contains(user));
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.ActionName))
+        {
+            var action = model.ActionName.Trim();
+            query = query.Where(a => a.Action == action);
         }
 
         if (!string.IsNullOrWhiteSpace(model.Result))

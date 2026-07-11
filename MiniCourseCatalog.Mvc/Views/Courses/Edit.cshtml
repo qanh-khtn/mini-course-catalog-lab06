@@ -1,8 +1,7 @@
-@model CourseEditViewModel
+﻿@model CourseEditViewModel
 
 @{
     ViewData["Title"] = "Sửa Khóa Học";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="container py-4 course-page">
@@ -12,14 +11,14 @@
             <p class="page-description">Cập nhật thông tin lớp học. Hệ thống tự động xử lý xung đột nếu có người khác đang sửa cùng lúc.</p>
         </div>
 
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+        <a asp-controller="Courses" asp-action="Index"
            class="btn app-btn app-btn-ghost fw-bold px-4">
             <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
         </a>
     </div>
 
     <div class="card shadow-sm rounded-4 p-4 create-course-card">
-        <form asp-controller="Courses" asp-action="Edit" asp-route-id="@Model.Id" asp-route-theme="@currentTheme" method="post" enctype="multipart/form-data">
+        <form asp-controller="Courses" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -82,14 +81,16 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="Thumbnail" class="form-label fw-bold"></label>
-                    <input asp-for="Thumbnail" type="file" accept="image/*" class="form-control form-control-lg search-input" />
-                    <span asp-validation-for="Thumbnail" class="text-danger small"></span>
+                    <label class="form-label fw-bold">Ảnh thumbnail</label>
                     @if (!string.IsNullOrEmpty(Model.ExistingThumbnailPath))
                     {
-                        <div class="mt-2">
+                        <div class="mb-2">
                             <img src="@Model.ExistingThumbnailPath" alt="Thumbnail" class="img-thumbnail" style="max-height: 100px;" />
                         </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-2">Chưa có ảnh thumbnail.</p>
                     }
                 </div>
             </div>
@@ -98,12 +99,34 @@
                 <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4">
                     <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
                 </button>
-                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+                <a asp-controller="Courses" asp-action="Index"
                    class="btn app-btn app-btn-ghost fw-bold px-4">
                     <i class="bi bi-x-circle me-2"></i>Hủy
                 </a>
             </div>
         </form>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="card shadow-sm rounded-4 p-4 mt-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-image me-2"></i>Thay ảnh thumbnail</h5>
+                <form asp-controller="Courses" asp-action="UploadThumbnail" asp-route-id="@Model.Id"
+                      method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Chọn ảnh mới (.jpg, .png, .webp — tối đa 2MB)</label>
+                            <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png,.webp" class="form-control search-input" required />
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn app-btn app-btn-primary fw-bold w-100">
+                                <i class="bi bi-upload me-2"></i>Tải lên
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        }
     </div>
 </div>
 

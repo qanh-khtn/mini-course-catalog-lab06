@@ -1,8 +1,7 @@
-@model CourseDeleteViewModel
+﻿@model CourseDeleteViewModel
 
 @{
     ViewData["Title"] = "Xóa Khóa Học";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 <div class="container py-4 course-page">
@@ -12,7 +11,7 @@
             <p class="page-description">Khóa học sẽ được chuyển vào thùng rác và có thể khôi phục lại sau.</p>
         </div>
 
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+        <a asp-controller="Courses" asp-action="Index"
            class="btn app-btn app-btn-ghost fw-bold px-4">
             <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
         </a>
@@ -47,7 +46,7 @@
             <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
         </dl>
 
-        <form asp-controller="Courses" asp-action="Delete" asp-route-theme="@currentTheme" method="post">
+        <form asp-controller="Courses" asp-action="Delete" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="@Model.Id" />
 
@@ -55,7 +54,7 @@
                 <button type="submit" class="btn btn-danger fw-bold px-4">
                     <i class="bi bi-trash me-2"></i>Xóa khóa học
                 </button>
-                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+                <a asp-controller="Courses" asp-action="Index"
                    class="btn app-btn app-btn-ghost fw-bold px-4">
                     <i class="bi bi-x-circle me-2"></i>Hủy
                 </a>

@@ -1,8 +1,7 @@
-@model List<CourseTrashItemViewModel>
+﻿@model List<CourseTrashItemViewModel>
 
 @{
     ViewData["Title"] = "Thùng Rác Khóa Học";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 }
 
 @* Modal xác nhận xóa vĩnh viễn *@
@@ -33,7 +32,7 @@
                     Hủy bỏ
                 </button>
                 <form id="hardDeleteForm" method="post" class="d-inline"
-                      asp-controller="Courses" asp-action="HardDelete" asp-route-theme="@currentTheme">
+                      asp-controller="Courses" asp-action="HardDelete">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="hardDeleteId" name="id" value="" />
                     <button type="submit" class="btn btn-danger fw-bold px-4">
@@ -52,7 +51,7 @@
             <p class="page-description">Các khóa học đã bị xóa. Bạn có thể khôi phục hoặc xóa vĩnh viễn từ đây.</p>
         </div>
 
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+        <a asp-controller="Courses" asp-action="Index"
            class="btn app-btn app-btn-ghost fw-bold px-4">
             <i class="bi bi-arrow-left me-2"></i>Danh sách hoạt động
         </a>
@@ -87,8 +86,7 @@
                             <td>@item.Category</td>
                             <td>@item.DeletedAtText</td>
                             <td class="text-end">
-                                <form asp-controller="Courses" asp-action="Restore"
-                                      asp-route-theme="@currentTheme" method="post" class="d-inline">
+                                <form asp-controller="Courses" asp-action="Restore" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.Id" />
                                     <button type="submit" class="btn btn-success btn-sm fw-bold">
@@ -113,7 +111,7 @@
 </div>
 
 @section Scripts {
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         (function () {
             var modal = document.getElementById('hardDeleteModal');
             // Dời modal ra thẳng <body> để thoát khỏi stacking context của

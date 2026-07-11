@@ -237,6 +237,26 @@ public class CourseService : ICourseService
         }
     }
 
+    public async Task<CourseUpdateResult> UpdateThumbnailAsync(int id, string thumbnailPath)
+    {
+        var course = await _courseRepository.GetByIdAsync(id);
+        if (course == null) return CourseUpdateResult.NotFound;
+
+        course.ThumbnailPath = thumbnailPath;
+
+        try
+        {
+            await _courseRepository.SaveChangesAsync();
+            _logger.LogInformation("Course thumbnail updated. CourseId={CourseId}, Path={Path}", id, thumbnailPath);
+            return CourseUpdateResult.Success;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _logger.LogWarning("Concurrency conflict updating thumbnail. CourseId={CourseId}", id);
+            return CourseUpdateResult.ConcurrencyConflict;
+        }
+    }
+
     public async Task<bool> SoftDeleteAsync(int id)
     {
         var course = await _courseRepository.GetByIdAsync(id);
@@ -395,4 +415,27 @@ public class CourseService : ICourseService
             return "\"" + field.Replace("\"", "\"\"") + "\"";
         return field;
     }
+
+    // --- Lab06: Catalog công khai ---
+    public async Task<List<CourseCatalogItemViewModel>> GetCatalogAsync()
+    {
+        var courses = await _courseRepository.GetAllReadOnlyAsync();
+        return courses
+            .Where(c => !c.IsDeleted)
+            .OrderBy(c => c.Name)
+            .Select(c => new CourseCatalogItemViewModel
+            {
+                Id             = c.Id,
+                Code           = c.Code,
+                Name           = c.Name,
+                Category       = c.CourseCategory?.Name ?? "",
+                Instructor     = c.Instructor,
+                TuitionFee     = c.TuitionFee,
+                AvailableSeats = c.MaxCapacity - c.CurrentEnrollment,
+                StartDate      = c.StartDate,
+                ThumbnailPath  = c.ThumbnailPath
+            })
+            .ToList();
+    }
 }
+

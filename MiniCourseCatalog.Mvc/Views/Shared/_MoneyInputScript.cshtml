@@ -2,7 +2,7 @@
     Ô hiển thị học phí có dấu phẩy ngăn cách nghìn (VD: 2,000,000).
     #TuitionFeeDisplay: ô text user nhìn/gõ; input[name=TuitionFee] (hidden): số thuần để model binding.
 *@
-<script>
+<script nonce="@Context.Items["csp-nonce"]">
     (function () {
         function init() {
             var display = document.getElementById('TuitionFeeDisplay');

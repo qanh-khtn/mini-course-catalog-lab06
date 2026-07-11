@@ -1,7 +1,6 @@
-@model CourseListItemViewModel
+﻿@model CourseListItemViewModel
 
 @{
-    var theme = ViewData["Theme"]?.ToString() ?? "light";
     // Mỗi chuyên ngành một dải màu nhận diện riêng (cat-0..cat-5)
     var catClass = "cat-" + (Math.Abs(Model.Category.GetHashCode()) % 6);
     var fillRate = Model.MaxCapacity > 0
@@ -17,7 +16,7 @@
                 <div class="fw-bold text-primary small">@Model.Code</div>
                 <h5 class="fw-bold mb-1">
                     <a asp-controller="Courses" asp-action="Detail"
-                       asp-route-id="@Model.Id" asp-route-theme="@theme"
+                       asp-route-id="@Model.Id"
                        class="stretched-link text-decoration-none text-reset">@Model.Name</a>
                 </h5>
                 <div class="text-muted small">@Model.Category</div>
@@ -48,21 +47,27 @@
 
             @* position-relative + z-index để nút nổi lên trên stretched-link của tiêu đề *@
             <div class="d-flex gap-1 position-relative" style="z-index: 2;">
-                <a asp-controller="Courses" asp-action="Edit"
-                   asp-route-id="@Model.Id" asp-route-theme="@theme"
-                   class="btn btn-sm btn-outline-primary" title="Sửa">
-                    <i class="bi bi-pencil"></i>
-                </a>
-                <a asp-controller="Courses" asp-action="AdjustSeats"
-                   asp-route-id="@Model.Id" asp-route-theme="@theme"
-                   class="btn btn-sm btn-outline-secondary" title="Điều chỉnh sĩ số">
-                    <i class="bi bi-people"></i>
-                </a>
-                <a asp-controller="Courses" asp-action="Delete"
-                   asp-route-id="@Model.Id" asp-route-theme="@theme"
-                   class="btn btn-sm btn-outline-danger" title="Xóa">
-                    <i class="bi bi-trash"></i>
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Courses" asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-primary" title="Sửa">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a asp-controller="Courses" asp-action="Delete"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-danger" title="Xóa">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                }
+                @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                {
+                    <a asp-controller="Courses" asp-action="AdjustSeats"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-secondary" title="Điều chỉnh sĩ số">
+                        <i class="bi bi-people"></i>
+                    </a>
+                }
             </div>
         </div>
     </div>

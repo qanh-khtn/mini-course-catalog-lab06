@@ -1,8 +1,7 @@
-@model List<CourseAuditLogItemViewModel>
+﻿@model List<CourseAuditLogItemViewModel>
 
 @{
     ViewData["Title"] = "Nhật Ký Kiểm Tra";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
     var activeCount = Model.Count(c => !c.IsDeleted);
     var deletedCount = Model.Count(c => c.IsDeleted);
     var updatedCount = Model.Count(c => c.UpdatedAt.HasValue);
@@ -14,7 +13,7 @@
             <h2 class="page-title">Nhật Ký Kiểm Tra (Audit Log)</h2>
             <p class="page-description">Theo dõi thời điểm tạo, cập nhật và xóa mềm của toàn bộ khóa học trong hệ thống.</p>
         </div>
-        <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"
+        <a asp-controller="Courses" asp-action="Index"
            class="btn app-btn app-btn-ghost fw-bold px-4">
             <i class="bi bi-arrow-left me-2"></i>Danh sách khóa học
         </a>

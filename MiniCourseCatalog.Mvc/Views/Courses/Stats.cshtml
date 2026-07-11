@@ -1,14 +1,13 @@
 @model CourseStatsViewModel
 @{
     ViewData["Title"] = "Thống Kê Đào Tạo";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
     var overallFillRateWidth = Model.OverallFillRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div><h2 class="fw-extrabold text-dark m-0">Báo Cáo Hoạt Động Kế Toán & Đào Tạo</h2><p class="text-muted m-0">Tổng hợp dữ liệu doanh thu học phí và mật độ phân bổ học viên thực tế.</p></div>
-        <a class="btn app-btn app-btn-ghost fw-bold px-4" asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme"><i class="bi bi-arrow-left me-2"></i>Quay lại</a>
+        <a class="btn app-btn app-btn-ghost fw-bold px-4" asp-controller="Courses" asp-action="Index"><i class="bi bi-arrow-left me-2"></i>Quay lại</a>
     </div>
 
     <div class="row g-3 mb-4">
@@ -27,7 +26,20 @@
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
                 <h5 class="fw-bold text-dark mb-1">Doanh Thu Theo Chuyên Ngành</h5>
                 <p class="text-muted small mb-3">Tổng hợp doanh thu thực thu theo từng chuyên ngành.</p>
-                <div style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
+                <div style="position:relative;height:300px;">
+                    @{
+                        // Dùng JsonSerializer.Serialize (trả về string thường) thay vì Json.Serialize
+                        // (trả về IHtmlContent, không bị Razor encode) — vì JSON chứa dấu " sẽ cắt đứt
+                        // attribute HTML giữa chừng nếu không được encode đúng khi chèn vào data-*.
+                        var labelsJson = System.Text.Json.JsonSerializer.Serialize(Model.CategoryStats.Select(c => c.Category));
+                        var revenuesJson = System.Text.Json.JsonSerializer.Serialize(Model.CategoryStats.Select(c => c.Revenue));
+                        var fillRatesJson = System.Text.Json.JsonSerializer.Serialize(Model.CategoryStats.Select(c => c.FillRate));
+                    }
+                    <canvas id="revenueChart"
+                            data-labels="@labelsJson"
+                            data-revenues="@revenuesJson"
+                            data-fillrates="@fillRatesJson"></canvas>
+                </div>
             </div>
         </div>
         <div class="col-lg-5">
@@ -44,15 +56,16 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         (function () {
-            var isDark = @(currentTheme == "dark" ? "true" : "false");
+            var isDark = document.documentElement.classList.contains('theme-dark');
             var textColor = isDark ? "#94a3b8" : "#64748b";
             var gridColor = isDark ? "rgba(148,163,184,.12)" : "rgba(100,116,139,.12)";
 
-            var labels   = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.Category)));
-            var revenues = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.Revenue)));
-            var fillRates = @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.FillRate)));
+            var el = document.getElementById('revenueChart');
+            var labels    = JSON.parse(el.dataset.labels);
+            var revenues  = JSON.parse(el.dataset.revenues);
+            var fillRates = JSON.parse(el.dataset.fillrates);
 
             var palette = ["#2563eb", "#06b6d4", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"];
 

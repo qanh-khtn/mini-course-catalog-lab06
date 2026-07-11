@@ -1,5 +1,24 @@
+@using MiniCourseCatalog.Mvc.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var theme      = ViewData["Theme"]?.ToString() ?? "light";
+    var bodyClass  = theme == "dark" ? "theme-dark" : "theme-light";
+    var nextTheme  = theme == "light" ? "dark" : "light";
+    var themeTitle = theme == "light" ? "Giao diện Tối" : "Giao diện Sáng";
+
+    var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString()    ?? "";
+
+    Func<string, string, bool> IsActive =
+        (c, a) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(action, a, StringComparison.OrdinalIgnoreCase);
+
+    Func<string, string, string> NavCls =
+        (c, a) => "nav-link text-uppercase small " + (IsActive(c, a) ? "active fw-bold" : "fw-medium");
+}
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="@bodyClass" data-bs-theme="@theme">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,7 +34,7 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
@@ -23,30 +42,14 @@
     <link rel="stylesheet" href="~/MiniCourseCatalog.Mvc.styles.css" asp-append-version="true" />
 </head>
 
-@{
-    // Theme is set by ThemeFilter (reads cookie + query param). Just read from ViewData.
-    var theme      = ViewData["Theme"]?.ToString() == "dark" ? "dark" : "light";
-    var bodyClass  = theme == "dark" ? "theme-dark" : "theme-light";
-    var nextTheme  = theme == "light" ? "dark" : "light";
-    var themeTitle = theme == "light" ? "Giao diện Tối" : "Giao diện Sáng";
 
-    var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    var action = ViewContext.RouteData.Values["action"]?.ToString()    ?? "";
-
-    Func<string, string, bool> IsActive =
-        (c, a) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(action, a, StringComparison.OrdinalIgnoreCase);
-
-    Func<string, string, string> NavCls =
-        (c, a) => "nav-link text-uppercase small " + (IsActive(c, a) ? "active fw-bold" : "fw-medium");
-}
 
 <body class="@bodyClass">
     <header>
         <nav class="navbar navbar-expand-sm app-navbar sticky-top mb-4">
             <div class="container-fluid px-4">
                 <a class="navbar-brand fw-extrabold"
-                   asp-controller="Home" asp-action="Index" asp-route-theme="@theme">
+                   asp-controller="Home" asp-action="Index">
                     <i class="bi bi-mortarboard-fill me-2"></i>Mini Training Center
                 </a>
 
@@ -61,67 +64,79 @@
                     <ul class="navbar-nav flex-grow-1 ms-sm-2">
                         <li class="nav-item">
                             <a class="@NavCls("Home","Index")"
-                               asp-controller="Home" asp-action="Index" asp-route-theme="@theme">
+                               asp-controller="Home" asp-action="Index">
                                 Trang chủ
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="@NavCls("Courses","Catalog")"
+                               asp-controller="Courses" asp-action="Catalog">
+                                Danh mục
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="@NavCls("Courses","Index")"
-                               asp-controller="Courses" asp-action="Index" asp-route-theme="@theme">
+                               asp-controller="Courses" asp-action="Index">
                                 Khóa học
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="@NavCls("Courses","Stats")"
-                               asp-controller="Courses" asp-action="Stats" asp-route-theme="@theme">
-                                Thống kê
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Courses","Search")"
-                               asp-controller="Courses" asp-action="Search" asp-route-theme="@theme">
-                                Tìm kiếm
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Courses","Filter")"
-                               asp-controller="Courses" asp-action="Filter" asp-route-theme="@theme">
-                                Lọc
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="@NavCls("Courses","Enroll")"
-                               asp-controller="Courses" asp-action="Enroll" asp-route-theme="@theme">
+                               asp-controller="Courses" asp-action="Enroll">
                                 Đăng ký
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Courses","AuditLog")"
-                               asp-controller="Courses" asp-action="AuditLog" asp-route-theme="@theme">
-                                Audit Log
-                            </a>
-                        </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link text-uppercase small fw-medium dropdown-toggle @(ctrl is "CourseCategories" or "DataHealth" or "Enrollments" ? "active fw-bold" : "")"
+                            <a class="nav-link text-uppercase small fw-medium dropdown-toggle @(ctrl is "CourseCategories" or "DataHealth" or "Enrollments" or "AuditLogs" ? "active fw-bold" : (IsActive("Courses","Stats") || IsActive("Courses","Search") || IsActive("Courses","Filter") || IsActive("Courses","AuditLog") ? "active fw-bold" : ""))"
                                href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Quản trị
                             </a>
                             <ul class="dropdown-menu rounded-3 shadow-sm border-0 mt-2">
                                 <li>
-                                    <a class="dropdown-item small" asp-controller="CourseCategories" asp-action="Index" asp-route-theme="@theme">
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Stats">
+                                        <i class="bi bi-bar-chart me-2 text-primary"></i>Thống kê
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Search">
+                                        <i class="bi bi-search me-2 text-primary"></i>Tìm kiếm
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Filter">
+                                        <i class="bi bi-funnel me-2 text-primary"></i>Lọc
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="CourseCategories" asp-action="Index">
                                         <i class="bi bi-diagram-3 me-2 text-primary"></i>Chuyên ngành
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item small" asp-controller="Enrollments" asp-action="History" asp-route-theme="@theme">
+                                    <a class="dropdown-item small" asp-controller="Enrollments" asp-action="History">
                                         <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử đăng ký
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Trash" asp-route-theme="@theme">
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Trash">
                                         <i class="bi bi-trash me-2 text-primary"></i>Thùng rác
                                     </a>
                                 </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="AuditLog">
+                                        <i class="bi bi-journal-text me-2 text-primary"></i>Audit Log (Course)
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item small" asp-controller="AuditLogs" asp-action="Index">
+                                            <i class="bi bi-shield-lock me-2 text-primary"></i>Nhật ký bảo mật
+                                        </a>
+                                    </li>
+                                }
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <a class="dropdown-item small" href="/health/ready" target="_blank">
@@ -133,9 +148,8 @@
                                         <i class="bi bi-braces me-2 text-primary"></i>API Error Demo
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider" /></li>
                                 <li>
-                                    <a class="dropdown-item small" asp-controller="DataHealth" asp-action="Index" asp-route-theme="@theme">
+                                    <a class="dropdown-item small" asp-controller="DataHealth" asp-action="Index">
                                         <i class="bi bi-database-check me-2 text-primary"></i>DB Health
                                     </a>
                                 </li>
@@ -143,7 +157,7 @@
                         </li>
                         <li class="nav-item ms-sm-2">
                             <a class="nav-link nav-cta"
-                               asp-controller="Courses" asp-action="Create" asp-route-theme="@theme">
+                               asp-controller="Courses" asp-action="Create">
                                 <i class="bi bi-plus-lg me-1"></i>Thêm mới
                             </a>
                         </li>
@@ -153,7 +167,22 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item d-flex align-items-center me-3">
-                                <span class="navbar-text text-primary fw-bold">@User.Identity.Name</span>
+                                @{
+                                    string displayName = User.Identity.Name ?? "User";
+                                    if (displayName.Equals("admin@coursecenter.test", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        displayName = "Admin";
+                                    }
+                                    else
+                                    {
+                                        var appUser = await UserManager.GetUserAsync(User);
+                                        if (appUser != null && !string.IsNullOrWhiteSpace(appUser.FullName))
+                                        {
+                                            displayName = appUser.FullName;
+                                        }
+                                    }
+                                }
+                                <span class="navbar-text text-primary fw-bold">@displayName</span>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
@@ -173,20 +202,23 @@
                     </ul>
 
                     <div class="navbar-theme-toggle ms-sm-3 mt-3 mt-sm-0">
-                        <a href="?theme=@nextTheme"
-                           class="modern-theme-switch shadow-sm"
-                           title="@themeTitle"
-                           aria-label="@themeTitle"
-                           data-theme-toggle
-                           data-next-theme="@nextTheme">
-                            <span class="switch-track @(theme == "dark" ? "track-dark" : "track-light")">
-                                <span class="switch-symbol switch-symbol-sun"></span>
-                                <span class="switch-symbol switch-symbol-moon"></span>
-                                <span class="switch-thumb @(theme == "dark" ? "thumb-dark" : "thumb-light")">
-                                    <span class="switch-thumb-icon"></span>
+                        <form method="post" asp-controller="Theme" asp-action="Toggle" class="d-inline m-0 p-0">
+                            <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                            <button type="submit"
+                                    class="modern-theme-switch shadow-sm border-0 p-1"
+                                    style="background-color: transparent;"
+                                    title="@themeTitle"
+                                    aria-label="@themeTitle"
+                                    data-theme-toggle>
+                                <span class="switch-track @(theme == "dark" ? "track-dark" : "track-light")">
+                                    <span class="switch-symbol switch-symbol-sun"></span>
+                                    <span class="switch-symbol switch-symbol-moon"></span>
+                                    <span class="switch-thumb @(theme == "dark" ? "thumb-dark" : "thumb-light")">
+                                        <span class="switch-thumb-icon"></span>
+                                    </span>
                                 </span>
-                            </span>
-                        </a>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -234,7 +266,7 @@
                 &copy; 2026 Mini Training Center
             </span>
             <a class="small text-muted text-decoration-none"
-               asp-controller="Home" asp-action="Privacy" asp-route-theme="@theme">
+               asp-controller="Home" asp-action="Privacy">
                 Quyền riêng tư
             </a>
         </div>
@@ -244,7 +276,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script>
+    <script nonce="@Context.Items["csp-nonce"]">
         // Auto-dismiss alerts after 4s
         setTimeout(function () {
             document.querySelectorAll(".alert.auto-dismiss").forEach(function (el) {

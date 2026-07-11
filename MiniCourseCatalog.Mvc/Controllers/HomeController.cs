@@ -16,9 +16,8 @@ public class HomeController : Controller
         _auditLogService = auditLogService;
     }
 
-    public async Task<IActionResult> Index(string theme = "light")
+    public async Task<IActionResult> Index()
     {
-        ViewData["Theme"] = NormalizeTheme(theme);
 
         var model = new SecurityDashboardViewModel();
 
@@ -30,12 +29,12 @@ public class HomeController : Controller
             model.AccessDeniedCountToday = await query
                 .CountAsync(a => a.Action == "AccessDenied" && a.CreatedAt.Date == today);
 
-            var sensitiveActions = new[] { "CreateCourse", "EditCourse", "DeleteCourse", "RestoreCourse", "AdjustSeats", "UploadThumbnail" };
+            var sensitiveActions = new[] { "CreateCourse", "EditCourse", "DeleteCourse", "RestoreCourse", "AdjustSeats", "ReplaceCourseThumbnail" };
             model.SensitiveActionsCountToday = await query
                 .CountAsync(a => sensitiveActions.Contains(a.Action) && a.CreatedAt.Date == today);
 
             model.FailedUploadsCountToday = await query
-                .CountAsync(a => a.Action == "UploadThumbnail" && a.Result == "Fail" && a.CreatedAt.Date == today);
+                .CountAsync(a => a.Action == "ReplaceCourseThumbnail" && a.Result == "Fail" && a.CreatedAt.Date == today);
         }
 
         return View(model);
@@ -50,9 +49,5 @@ public class HomeController : Controller
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-    private static string NormalizeTheme(string theme)
-    {
-        return string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? "dark" : "light";
     }
 }

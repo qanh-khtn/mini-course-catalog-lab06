@@ -1,7 +1,6 @@
-@model CourseDetailViewModel
+﻿@model CourseDetailViewModel
 @{
     ViewData["Title"] = "Chi Tiết Khóa Học";
-    var currentTheme = ViewData["Theme"]?.ToString() ?? "light";
 
     var statusClass = (Model.CurrentEnrollment >= Model.MaxCapacity)          ? "badge bg-danger" :
                       (Model.MaxCapacity - Model.CurrentEnrollment <= 3)       ? "badge bg-warning text-dark" :
@@ -17,7 +16,7 @@
             <p class="page-description">@Model.Category</p>
         </div>
         <a class="btn app-btn app-btn-ghost fw-bold px-4"
-           asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme">
+           asp-controller="Courses" asp-action="Index">
             <i class="bi bi-arrow-left me-2"></i>Quay lại
         </a>
     </div>
@@ -128,7 +127,7 @@
                 <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
                     <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
                 </a>
-                <a asp-controller="Courses" asp-action="Index" asp-route-theme="@currentTheme" class="btn app-btn app-btn-ghost fw-bold px-4">
+                <a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-ghost fw-bold px-4">
                     <i class="bi bi-arrow-left me-2"></i>Về danh sách
                 </a>
             </div>

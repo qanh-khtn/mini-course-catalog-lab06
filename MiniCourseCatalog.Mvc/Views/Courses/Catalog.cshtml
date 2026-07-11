@@ -1,0 +1,112 @@
+@model List<CourseCatalogItemViewModel>
+@{
+    ViewData["Title"] = "Danh Mục Khóa Học";
+}
+
+<div class="container py-5">
+    <div class="row align-items-end mb-5">
+        <div class="col-lg-8">
+            <p class="text-primary fw-bold small text-uppercase mb-2 tracking-wider">
+                <i class="bi bi-mortarboard-fill me-2"></i>Mini Training Center
+            </p>
+            <h1 class="fw-extrabold mb-3" style="font-size:2.4rem;letter-spacing:-1px;">
+                Danh Mục Khóa Học
+            </h1>
+            <p class="text-muted fs-6 mb-0" style="max-width:520px;">
+                Khám phá các lớp học đang tuyển sinh — thông tin minh bạch, không cần đăng nhập.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-4 py-2 fw-bold fs-6">
+                @Model.Count khóa học
+            </span>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state text-center p-5 rounded-4">
+            <i class="bi bi-journal-x display-4 d-block mb-3 opacity-25"></i>
+            <div class="display-6 fw-bold mb-2">Chưa có khóa học nào</div>
+            <p class="text-muted mb-0">Vui lòng quay lại sau.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-xl-4">
+                    <div class="card course-card h-100 rounded-4 shadow-sm border-0 overflow-hidden">
+                        @* Thumbnail *@
+                        <div class="position-relative" style="height:180px;overflow:hidden;background:linear-gradient(135deg,#e0f2fe,#eef2ff);">
+                            @if (!string.IsNullOrEmpty(item.ThumbnailPath))
+                            {
+                                <img src="@item.ThumbnailPath" alt="@item.Name"
+                                     class="w-100 h-100"
+                                     style="object-fit:cover;"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                <div class="w-100 h-100 d-none align-items-center justify-content-center position-absolute top-0 start-0"
+                                     style="background:linear-gradient(135deg,#e0f2fe,#eef2ff);">
+                                    <i class="bi bi-journal-text text-primary opacity-25" style="font-size:4rem;"></i>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-journal-text text-primary opacity-25" style="font-size:4rem;"></i>
+                                </div>
+                            }
+                            @if (item.IsFull)
+                            {
+                                <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill small">Hết chỗ</span>
+                            }
+                            else if (item.AvailableSeats <= 3)
+                            {
+                                <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark rounded-pill small">Sắp hết</span>
+                            }
+                        </div>
+
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill small px-3 py-1">@item.Category</span>
+                            </div>
+                            <h5 class="fw-bold mb-1 lh-sm">@item.Name</h5>
+                            <div class="text-muted small mb-3">
+                                <i class="bi bi-person-fill me-1"></i>@item.Instructor
+                            </div>
+
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2 small">
+                                    <span class="text-muted"><i class="bi bi-calendar3 me-1"></i>@item.StartDateText</span>
+                                    <span class="@(item.IsFull ? "text-danger fw-bold" : "text-success fw-bold")">
+                                        @(item.IsFull ? "Hết chỗ" : $"{item.AvailableSeats} chỗ còn")
+                                    </span>
+                                </div>
+                                <div class="fw-extrabold text-primary" style="font-size:1.15rem;">@item.TuitionFeeText</div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 px-4 pb-4">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a asp-controller="Courses" asp-action="Enroll"
+                                   class="btn app-btn app-btn-primary fw-bold w-100 @(item.IsFull ? "disabled" : "")">
+                                    <i class="bi bi-person-plus me-2"></i>Đăng ký học
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login"
+                                   asp-route-returnUrl="/Courses/Enroll"
+                                   class="btn app-btn app-btn-soft fw-bold w-100">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập để đăng ký
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
