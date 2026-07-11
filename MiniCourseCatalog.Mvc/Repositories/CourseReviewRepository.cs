@@ -33,6 +33,17 @@ public class CourseReviewRepository : ICourseReviewRepository
         return await _context.CourseReviews.AnyAsync(r => r.CourseId == courseId && r.UserId == userId);
     }
 
+    public async Task<CourseReview?> GetByIdAsync(int id)
+    {
+        return await _context.CourseReviews.FindAsync(id);
+    }
+
+    public Task UpdateAsync(CourseReview review)
+    {
+        _context.CourseReviews.Update(review);
+        return Task.CompletedTask;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

@@ -61,4 +61,5 @@ public interface ICourseService
     // --- Lab06: B3 Reviews & Ratings ---
     Task<bool> AddReviewAsync(int courseId, string userId, int rating, string comment);
     Task<List<CourseReview>> GetReviewsAsync(int courseId);
+    Task<bool> HideReviewAsync(int id);
 }

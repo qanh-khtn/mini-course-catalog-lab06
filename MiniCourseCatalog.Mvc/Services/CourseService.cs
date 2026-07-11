@@ -478,5 +478,16 @@ public class CourseService : ICourseService
     {
         return await _reviewRepository.GetReviewsByCourseIdAsync(courseId);
     }
+
+    public async Task<bool> HideReviewAsync(int id)
+    {
+        var review = await _reviewRepository.GetByIdAsync(id);
+        if (review == null) return false;
+
+        review.IsHidden = true;
+        await _reviewRepository.UpdateAsync(review);
+        await _reviewRepository.SaveChangesAsync();
+        return true;
+    }
 }
 

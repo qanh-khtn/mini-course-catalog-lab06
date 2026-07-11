@@ -23,6 +23,22 @@ public class FakeCourseReviewRepository : ICourseReviewRepository
         return await Task.FromResult(_reviews.Any(r => r.CourseId == courseId && r.UserId == userId));
     }
 
+    public Task<CourseReview?> GetByIdAsync(int id)
+    {
+        return Task.FromResult(_reviews.FirstOrDefault(r => r.Id == id));
+    }
+
+    public Task UpdateAsync(CourseReview review)
+    {
+        var existing = _reviews.FirstOrDefault(r => r.Id == review.Id);
+        if (existing != null)
+        {
+            _reviews.Remove(existing);
+            _reviews.Add(review);
+        }
+        return Task.CompletedTask;
+    }
+
     public async Task SaveChangesAsync()
     {
         await Task.CompletedTask;

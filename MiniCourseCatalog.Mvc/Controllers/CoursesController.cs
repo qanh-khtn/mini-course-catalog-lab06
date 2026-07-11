@@ -100,6 +100,7 @@ public class CoursesController : Controller
             return NotFound($"Không thể tìm thấy thông tin khóa học với mã ID = {id}");
 
         var reviews = await _courseService.GetReviewsAsync(id);
+        reviews = reviews.Where(r => !r.IsHidden).ToList();
         var averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
 
         var detailVm = new CourseDetailViewModel
@@ -140,6 +141,29 @@ public class CoursesController : Controller
         }
 
         return RedirectToAction(nameof(Detail), new { id = courseId });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HideReview(int id)
+    {
+        var success = await _courseService.HideReviewAsync(id);
+        if (success)
+        {
+            await _auditLogService.LogAsync(
+                action: "HideReview",
+                entityName: "CourseReview",
+                entityId: id.ToString(),
+                result: "Success"
+            );
+            TempData["SuccessMessage"] = "Đã ẩn đánh giá.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = "Không tìm thấy đánh giá.";
+        }
+        return Redirect(Request.Headers["Referer"].ToString());
     }
 
     [Authorize(Policy = "CanViewCourse")]
