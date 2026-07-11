@@ -123,6 +123,7 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<ICourseCategoryRepository, CourseCategoryRepository>();
+builder.Services.AddScoped<ICourseReviewRepository, CourseReviewRepository>();
 
 // Services — Scoped
 builder.Services.AddScoped<ICourseService, CourseService>();

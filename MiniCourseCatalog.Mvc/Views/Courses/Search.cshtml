@@ -18,20 +18,23 @@
             <h4 class="fw-bold mb-4">Bạn muốn học gì hôm nay?</h4>
             
             <form asp-controller="Courses" asp-action="Search" method="get" class="mx-auto" style="max-width: 700px;">
-                
-                <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border" style="background: var(--app-bg)">
-                    <span class="input-group-text bg-transparent border-0 text-muted ps-4">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" name="keyword" value="@Model.Keyword" class="form-control border-0 bg-transparent shadow-none px-2" placeholder="Tên khóa học, mã lớp, giảng viên..." style="font-size: 1rem;" />
-                    <select name="category" class="form-select border-0 border-start bg-transparent shadow-none" style="max-width: 200px; font-size: 0.95rem;">
-                        <option value="">Tất cả danh mục</option>
-                        @foreach (var category in Model.Categories)
-                        {
-                            <option value="@category" selected="@(Model.Category == category)">@category</option>
-                        }
-                    </select>
-                    <button type="submit" class="btn app-btn app-btn-primary px-4 fw-bold">Tìm kiếm</button>
+                <div class="position-relative w-100">
+                    <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border" style="background: var(--app-bg)">
+                        <span class="input-group-text bg-transparent border-0 text-muted ps-4">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" autocomplete="off" name="keyword" value="@Model.Keyword" class="form-control border-0 bg-transparent shadow-none px-2" placeholder="Tên khóa học, mã lớp, giảng viên..." style="font-size: 1rem;" />
+                        <select name="category" class="form-select border-0 border-start bg-transparent shadow-none" style="max-width: 200px; font-size: 0.95rem;">
+                            <option value="">Tất cả danh mục</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category" selected="@(Model.Category == category)">@category</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn app-btn app-btn-primary px-4 fw-bold">Tìm kiếm</button>
+                    </div>
+                    <!-- Autocomplete Dropdown -->
+                    <div id="searchSuggestions" class="dropdown-menu w-100 shadow rounded-4 border-0 mt-2 d-none position-absolute" style="max-height: 350px; overflow-y: auto; z-index: 1050; top: 100%; left: 0;"></div>
                 </div>
                 
                 <div class="mt-4 d-flex flex-wrap justify-content-center gap-2 align-items-center text-muted small">
@@ -63,13 +66,93 @@
     }
     else if (!Model.Results.Any())
     {
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
-            <p>Không tìm thấy khóa học nào khớp với tìm kiếm của bạn.</p>
-        </div>
+        <partial name="~/Views/Shared/_EmptyState.cshtml" model='@("Không tìm thấy khóa học nào khớp với tìm kiếm của bạn.")' />
     }
     else
     {
         <partial name="~/Views/Shared/_CourseSearchResultList.cshtml" model="Model.Results" />
     }
 </div>
+
+@section Scripts {
+    <script nonce="@Context.Items["csp-nonce"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const suggestionsBox = document.getElementById('searchSuggestions');
+            let debounceTimer;
+
+            if (!searchInput || !suggestionsBox) return;
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                const q = this.value.trim();
+
+                if (q.length === 0) {
+                    suggestionsBox.classList.add('d-none');
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/api/courses/search?q=${encodeURIComponent(q)}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            suggestionsBox.innerHTML = '';
+                            if (data.length > 0) {
+                                data.forEach(course => {
+                                    const a = document.createElement('a');
+                                    a.className = 'dropdown-item d-flex align-items-center gap-3 py-2 border-bottom';
+                                    a.href = `/Courses/Detail/${course.id}`;
+                                    
+                                    const img = document.createElement('img');
+                                    img.src = course.thumbnailPath || '/images/placeholder.jpg';
+                                    img.className = 'rounded object-fit-cover shadow-sm';
+                                    img.style.width = '48px';
+                                    img.style.height = '48px';
+                                    img.onerror = function() { this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\" viewBox=\"0 0 48 48\"%3E%3Crect width=\"48\" height=\"48\" fill=\"%23e9ecef\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" font-size=\"12\" text-anchor=\"middle\" alignment-baseline=\"middle\" font-family=\"sans-serif\" fill=\"%23adb5bd\"%3E%3C/text%3E%3C/svg%3E'; };
+                                    
+                                    const info = document.createElement('div');
+                                    info.innerHTML = `<div class="fw-bold text-dark text-truncate" style="max-width: 400px;">${course.name}</div>
+                                                      <div class="small text-muted d-flex gap-2 mt-1">
+                                                        <span><i class="bi bi-upc-scan me-1"></i>${course.code}</span>
+                                                        <span><i class="bi bi-people me-1"></i>${course.availableSeats} chỗ</span>
+                                                      </div>`;
+                                    
+                                    a.appendChild(img);
+                                    a.appendChild(info);
+                                    suggestionsBox.appendChild(a);
+                                });
+                                // Remove last border-bottom
+                                if (suggestionsBox.lastChild) {
+                                    suggestionsBox.lastChild.classList.remove('border-bottom');
+                                }
+                                suggestionsBox.classList.remove('d-none');
+                            } else {
+                                suggestionsBox.innerHTML = '<div class="dropdown-item text-muted text-center small py-3"><i class="bi bi-inbox fs-4 d-block mb-1 opacity-50"></i>Không tìm thấy kết quả</div>';
+                                suggestionsBox.classList.remove('d-none');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching search results:', error);
+                        });
+                }, 300);
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.classList.add('d-none');
+                }
+            });
+            
+            // Show suggestions when clicking input if there's text
+            searchInput.addEventListener('focus', function () {
+                if (this.value.trim().length > 0 && suggestionsBox.innerHTML.trim() !== '') {
+                    suggestionsBox.classList.remove('d-none');
+                }
+            });
+        });
+    </script>
+}
