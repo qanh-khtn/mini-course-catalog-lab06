@@ -20,49 +20,48 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-lg-8">
         <a asp-controller="Courses" asp-action="Index" class="text-decoration-none">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
                 <div class="rounded-3 p-2 bg-primary bg-opacity-10 mb-3 d-inline-flex">
                     <i class="bi bi-journal-richtext text-primary fs-4"></i>
                 </div>
-                <div class="fw-bold text-dark mb-1">Khóa Học</div>
+                <div class="fw-bold text-dark fs-5 mb-1">Khóa Học</div>
                 <div class="text-muted small">Danh sách lớp học, sĩ số và học phí</div>
             </div>
         </a>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-lg-4">
         <a asp-controller="Courses" asp-action="Stats" class="text-decoration-none">
             <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
                 <div class="rounded-3 p-2 bg-success bg-opacity-10 mb-3 d-inline-flex">
                     <i class="bi bi-bar-chart-fill text-success fs-4"></i>
                 </div>
-                <div class="fw-bold text-dark mb-1">Thống Kê</div>
+                <div class="fw-bold text-dark fs-5 mb-1">Thống Kê</div>
                 <div class="text-muted small">Doanh thu, tỷ lệ lấp đầy và báo cáo</div>
             </div>
         </a>
     </div>
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="CourseCategories" asp-action="Index" class="text-decoration-none">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
-                <div class="rounded-3 p-2 bg-info bg-opacity-10 mb-3 d-inline-flex">
-                    <i class="bi bi-diagram-3 text-info fs-4"></i>
-                </div>
-                <div class="fw-bold text-dark mb-1">Chuyên Ngành</div>
-                <div class="text-muted small">Quan hệ One-to-Many CourseCategory</div>
-            </div>
-        </a>
+</div>
+
+<div class="mb-5">
+    <div class="d-flex align-items-center gap-3 py-3 border-top">
+        <div class="rounded-circle p-2 bg-info bg-opacity-10 d-inline-flex">
+            <i class="bi bi-diagram-3 text-info fs-5"></i>
+        </div>
+        <div>
+            <a asp-controller="CourseCategories" asp-action="Index" class="text-decoration-none fw-bold text-dark d-block mb-1">Chuyên Ngành</a>
+            <div class="text-muted small">Quan hệ One-to-Many CourseCategory</div>
+        </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-        <a asp-controller="DataHealth" asp-action="Index" class="text-decoration-none">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 hover-shadow" style="transition:.2s;">
-                <div class="rounded-3 p-2 bg-warning bg-opacity-10 mb-3 d-inline-flex">
-                    <i class="bi bi-database-check text-warning fs-4"></i>
-                </div>
-                <div class="fw-bold text-dark mb-1">DB Health</div>
-                <div class="text-muted small">Migration, Seed Data, Transaction</div>
-            </div>
-        </a>
+    <div class="d-flex align-items-center gap-3 py-3 border-top border-bottom">
+        <div class="rounded-circle p-2 bg-warning bg-opacity-10 d-inline-flex">
+            <i class="bi bi-database-check text-warning fs-5"></i>
+        </div>
+        <div>
+            <a asp-controller="DataHealth" asp-action="Index" class="text-decoration-none fw-bold text-dark d-block mb-1">DB Health</a>
+            <div class="text-muted small">Migration, Seed Data, Transaction</div>
+        </div>
     </div>
 </div>
 
