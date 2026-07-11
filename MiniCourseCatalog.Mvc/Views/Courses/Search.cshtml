@@ -93,12 +93,18 @@
                 }
 
                 debounceTimer = setTimeout(() => {
-                    fetch(`/api/courses/search?q=${encodeURIComponent(q)}`)
+                        fetch(`/api/courses/search?q=${encodeURIComponent(q)}`)
                         .then(response => {
+                            if (response.status === 400) return null; // Validation error
+                            if (response.status === 404) return []; // Not found
                             if (!response.ok) throw new Error('Network response was not ok');
                             return response.json();
                         })
                         .then(data => {
+                            if (data === null) {
+                                suggestionsBox.classList.add('d-none');
+                                return;
+                            }
                             suggestionsBox.innerHTML = '';
                             if (data.length > 0) {
                                 data.forEach(course => {

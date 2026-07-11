@@ -49,6 +49,16 @@ public class ApiCoursesController : ControllerBase
             .Take(10)
             .ToListAsync();
 
+        if (!courses.Any())
+        {
+            return NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Không tìm thấy khóa học",
+                Detail = "Không có khóa học nào khớp với từ khóa tìm kiếm."
+            });
+        }
+
         return Ok(courses);
     }
 }
