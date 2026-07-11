@@ -1,4 +1,4 @@
-﻿@model CourseEditViewModel
+@model CourseEditViewModel
 
 @{
     ViewData["Title"] = "Sửa Khóa Học";
@@ -108,14 +108,14 @@
 
         @if (User.IsInRole("Admin"))
         {
-            <div class="card shadow-sm rounded-4 p-4 mt-4">
+            <div class="mt-5 pt-4 border-top">
                 <h5 class="fw-bold mb-3"><i class="bi bi-image me-2"></i>Thay ảnh thumbnail</h5>
                 <form asp-controller="Courses" asp-action="UploadThumbnail" asp-route-id="@Model.Id"
                       method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <div class="row g-3 align-items-end">
                         <div class="col-md-8">
-                            <label class="form-label fw-bold">Chọn ảnh mới (.jpg, .png, .webp — tối đa 2MB)</label>
+                            <label class="form-label fw-bold mb-2">Chọn ảnh mới (.jpg, .png, .webp — tối đa 2MB)</label>
                             <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png,.webp" class="form-control search-input" required />
                         </div>
                         <div class="col-md-4">

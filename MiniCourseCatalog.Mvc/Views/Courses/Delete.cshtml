@@ -1,4 +1,4 @@
-﻿@model CourseDeleteViewModel
+@model CourseDeleteViewModel
 
 @{
     ViewData["Title"] = "Xóa Khóa Học";
@@ -17,33 +17,33 @@
         </a>
     </div>
 
-    <div class="card shadow-sm rounded-4 p-4">
-        <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <div class="card shadow-sm rounded-4 p-4" style="background: var(--surface); border: 1px solid var(--border);">
+        <div class="alert border-0 d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2) !important;" role="alert">
             <i class="bi bi-exclamation-triangle-fill fs-5"></i>
             <span>Bạn có chắc muốn ngưng tuyển sinh / xóa mềm khóa học dưới đây?</span>
         </div>
 
         <dl class="row mb-4">
-            <dt class="col-sm-3">Mã khóa học</dt>
-            <dd class="col-sm-9 fw-bold text-primary">@Model.Code</dd>
+            <dt class="col-sm-3 text-secondary">Mã khóa học</dt>
+            <dd class="col-sm-9 fw-bold text-primary fw-mono">@Model.Code</dd>
 
-            <dt class="col-sm-3">Tên khóa học</dt>
-            <dd class="col-sm-9">@Model.Name</dd>
+            <dt class="col-sm-3 text-secondary">Tên khóa học</dt>
+            <dd class="col-sm-9 text-primary-emphasis fw-bold">@Model.Name</dd>
 
-            <dt class="col-sm-3">Chuyên ngành</dt>
+            <dt class="col-sm-3 text-secondary">Chuyên ngành</dt>
             <dd class="col-sm-9">@Model.Category</dd>
 
-            <dt class="col-sm-3">Giảng viên</dt>
+            <dt class="col-sm-3 text-secondary">Giảng viên</dt>
             <dd class="col-sm-9">@Model.Instructor</dd>
 
-            <dt class="col-sm-3">Học phí</dt>
-            <dd class="col-sm-9">@Model.TuitionFeeText</dd>
+            <dt class="col-sm-3 text-secondary">Học phí</dt>
+            <dd class="col-sm-9 fw-bold fw-mono text-success">@Model.TuitionFeeText</dd>
 
-            <dt class="col-sm-3">Sĩ số</dt>
+            <dt class="col-sm-3 text-secondary">Sĩ số</dt>
             <dd class="col-sm-9">@Model.EnrollmentStatus</dd>
 
-            <dt class="col-sm-3">Ngày khai giảng</dt>
-            <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3 text-secondary">Ngày khai giảng</dt>
+            <dd class="col-sm-9"><i class="bi bi-calendar3 text-muted me-1"></i>@Model.StartDate.ToString("dd/MM/yyyy")</dd>
         </dl>
 
         <form asp-controller="Courses" asp-action="Delete" method="post">
@@ -51,7 +51,7 @@
             <input type="hidden" name="id" value="@Model.Id" />
 
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="btn btn-danger fw-bold px-4">
+                <button type="submit" class="btn app-btn app-btn-danger fw-bold px-4">
                     <i class="bi bi-trash me-2"></i>Xóa khóa học
                 </button>
                 <a asp-controller="Courses" asp-action="Index"

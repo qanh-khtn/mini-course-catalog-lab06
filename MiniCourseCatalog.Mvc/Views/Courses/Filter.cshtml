@@ -94,13 +94,7 @@
 
             @if (!Model.Results.Any())
             {
-                <div class="card border-0 shadow-sm rounded-4 d-flex align-items-center justify-content-center" style="background: var(--surface); min-height: 300px;">
-                    <div class="text-center p-4">
-                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3 opacity-50"></i>
-                        <h6 class="fw-bold">Không tìm thấy khóa học</h6>
-                        <p class="text-muted small mb-0">Hãy thử nới lỏng khoảng học phí hoặc đổi chuyên ngành.</p>
-                    </div>
-                </div>
+                <partial name="~/Views/Shared/_EmptyState.cshtml" model='@("Không tìm thấy khóa học nào khớp với bộ lọc. Hãy thử nới lỏng khoảng học phí hoặc đổi chuyên ngành.")' />
             }
             else
             {
@@ -155,7 +149,7 @@
                     }
                 </div>
 
-                <div class="mt-4 p-3 rounded-4 border small font-monospace text-muted" style="background:var(--app-surface)">
+                <div class="mt-4 p-3 rounded-4 border small font-monospace text-muted" style="background: var(--surface-2); border-color: var(--border) !important;">
                     <i class="bi bi-database me-1 text-primary"></i>
                     <strong>EF Core query:</strong>
                     _context.Courses.Include(c =&gt; c.CourseCategory)

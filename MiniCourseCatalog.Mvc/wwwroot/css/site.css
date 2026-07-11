@@ -473,6 +473,16 @@ main {
     box-shadow: 0 14px 32px rgba(37, 99, 235, .32);
 }
 
+.app-btn-danger {
+    color: #fff !important;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, .22);
+}
+
+.app-btn-danger:hover {
+    box-shadow: 0 14px 32px rgba(239, 68, 68, .32);
+}
+
 .app-btn-soft {
     color: #1e293b !important;
     background: linear-gradient(135deg, #eef2ff, #ecfeff);
@@ -488,6 +498,11 @@ main {
 .theme-dark .app-btn-primary {
     background: linear-gradient(135deg, #3b82f6, #0891b2);
     box-shadow: 0 8px 28px rgba(56, 189, 248, .18);
+}
+
+.theme-dark .app-btn-danger {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 8px 28px rgba(248, 113, 113, .18);
 }
 
 .theme-dark .app-btn-soft,
@@ -1417,3 +1432,66 @@ body.theme-animating .progress {
 .skeleton-glow {
     animation: skeleton-glow 1.5s ease-in-out infinite;
 }
+
+/* ---- Review Avatar & Hide button ---- */
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+}
+.btn-hide-review {
+    color: var(--danger) !important;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.btn-hide-review:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    color: var(--danger) !important;
+}
+.btn-hide-review:active {
+    transform: scale(0.95);
+}
+
+/* ---- Dark Mode Dashboard Bento Overrides ---- */
+.theme-dark .bg-primary {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb) !important;
+    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+}
+.theme-dark .bg-danger {
+    background: linear-gradient(135deg, #7f1d1d, #dc2626) !important;
+    border: 1px solid rgba(248, 113, 113, 0.2) !important;
+}
+.theme-dark .bg-warning {
+    background: linear-gradient(135deg, #78350f, #d97706) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    color: #fff !important;
+}
+.theme-dark .bg-warning .text-black-50 {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+.theme-dark .bg-warning .display-2,
+.theme-dark .bg-warning .fs-1.fw-bold {
+    color: #fff !important;
+}
+
+/* ---- Autocomplete Suggestions Dark Mode ---- */
+.theme-dark #searchSuggestions {
+    background: #161b27 !important;
+    border: 1px solid rgba(148, 163, 184, 0.15) !important;
+}
+.theme-dark #searchSuggestions .dropdown-item {
+    border-bottom-color: rgba(148, 163, 184, 0.08) !important;
+}
+.theme-dark #searchSuggestions .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
