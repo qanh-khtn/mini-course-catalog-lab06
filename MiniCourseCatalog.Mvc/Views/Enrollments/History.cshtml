@@ -1,4 +1,4 @@
-﻿@model List<MiniCourseCatalog.Mvc.Models.Enrollment>
+@model List<MiniCourseCatalog.Mvc.Models.Enrollment>
 @{
     ViewData["Title"] = "Lịch Sử Đăng Ký";
 }
@@ -47,10 +47,10 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="border-top pt-3">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th class="ps-4">#</th>
                             <th>Học viên</th>
@@ -81,7 +81,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="card-footer border-0 py-3 px-4 text-muted small">
+            <div class="border-top py-3 px-4 text-muted small">
                 <i class="bi bi-info-circle me-1"></i>Tổng cộng <strong>@Model.Count</strong> lượt đăng ký
             </div>
         </div>

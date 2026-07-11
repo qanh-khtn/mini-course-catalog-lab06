@@ -16,17 +16,20 @@ public class CourseService : ICourseService
 {
     private readonly ICourseRepository _courseRepository;
     private readonly ICourseCategoryRepository _categoryRepository;
+    private readonly ICourseReviewRepository _reviewRepository;
     private readonly TrainingCenterConfig _config;
     private readonly ILogger<CourseService> _logger;
 
     public CourseService(
         ICourseRepository courseRepository,
         ICourseCategoryRepository categoryRepository,
+        ICourseReviewRepository reviewRepository,
         IOptions<TrainingCenterConfig> config,
         ILogger<CourseService>? logger = null)
     {
         _courseRepository = courseRepository;
         _categoryRepository = categoryRepository;
+        _reviewRepository = reviewRepository;
         _config = config.Value;
         _logger = logger ?? NullLogger<CourseService>.Instance;
     }
@@ -417,12 +420,15 @@ public class CourseService : ICourseService
     }
 
     // --- Lab06: Catalog công khai ---
-    public async Task<List<CourseCatalogItemViewModel>> GetCatalogAsync()
+    public async Task<PaginationViewModel<CourseCatalogItemViewModel>> GetCatalogAsync(int page = 1, int pageSize = 6)
     {
         var courses = await _courseRepository.GetAllReadOnlyAsync();
-        return courses
-            .Where(c => !c.IsDeleted)
-            .OrderBy(c => c.Name)
+        var query = courses.Where(c => !c.IsDeleted).OrderBy(c => c.Name);
+        var totalItems = query.Count();
+        
+        var items = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(c => new CourseCatalogItemViewModel
             {
                 Id             = c.Id,
@@ -436,6 +442,41 @@ public class CourseService : ICourseService
                 ThumbnailPath  = c.ThumbnailPath
             })
             .ToList();
+
+        return new PaginationViewModel<CourseCatalogItemViewModel>
+        {
+            Items = items,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+        };
+    }
+    // --- Lab06: B3 Reviews & Ratings ---
+    public async Task<bool> AddReviewAsync(int courseId, string userId, int rating, string comment)
+    {
+        if (await _reviewRepository.HasUserReviewedCourseAsync(courseId, userId))
+        {
+            return false; // Chống spam: 1 user chỉ review 1 lần
+        }
+
+        var review = new CourseReview
+        {
+            CourseId = courseId,
+            UserId = userId,
+            Rating = rating,
+            Comment = comment,
+            CreatedAt = DateTime.Now
+        };
+
+        await _reviewRepository.AddReviewAsync(review);
+        await _reviewRepository.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<CourseReview>> GetReviewsAsync(int courseId)
+    {
+        return await _reviewRepository.GetReviewsByCourseIdAsync(courseId);
     }
 }
 

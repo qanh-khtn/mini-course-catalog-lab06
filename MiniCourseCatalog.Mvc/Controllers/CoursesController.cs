@@ -31,7 +31,7 @@ public class CoursesController : Controller
     }
 
     [Authorize(Policy = "CanViewCourse")]
-    public async Task<IActionResult> Index(string keyword = "", string category = "")
+    public async Task<IActionResult> Index(string keyword = "", string category = "", int page = 1)
     {
 
         var rawCourses = await _courseService.GetAllAsync();
@@ -65,9 +65,23 @@ public class CoursesController : Controller
             MaxCapacity = c.MaxCapacity
         }).ToList();
 
+        int pageSize = 12;
+        var totalItems = courseItems.Count;
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        var pagedItems = courseItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        var pagedCourses = new PaginationViewModel<CourseListItemViewModel>
+        {
+            Items = pagedItems,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
+
         var viewModel = new CourseIndexViewModel
         {
-            Courses = courseItems,
+            Courses = pagedCourses,
             Categories = categories,
             Keyword = keyword,
             Category = category,
@@ -85,6 +99,9 @@ public class CoursesController : Controller
         if (course == null)
             return NotFound($"Không thể tìm thấy thông tin khóa học với mã ID = {id}");
 
+        var reviews = await _courseService.GetReviewsAsync(id);
+        var averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+
         var detailVm = new CourseDetailViewModel
         {
             Id = course.Id,
@@ -95,10 +112,34 @@ public class CoursesController : Controller
             TuitionFee = course.TuitionFee,
             CurrentEnrollment = course.CurrentEnrollment,
             MaxCapacity = course.MaxCapacity,
-            StartDate = course.StartDate
+            StartDate = course.StartDate,
+            Reviews = reviews,
+            ReviewCount = reviews.Count,
+            AverageRating = averageRating
         };
 
         return View(detailVm);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "CanEnrollCourse")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddReview(int courseId, int rating, string comment)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return Unauthorized();
+
+        var success = await _courseService.AddReviewAsync(courseId, userId, rating, comment);
+        if (!success)
+        {
+            TempData["ErrorMessage"] = "Bạn đã đánh giá khóa học này rồi.";
+        }
+        else
+        {
+            TempData["SuccessMessage"] = "Đánh giá của bạn đã được gửi thành công!";
+        }
+
+        return RedirectToAction(nameof(Detail), new { id = courseId });
     }
 
     [Authorize(Policy = "CanViewCourse")]
@@ -561,10 +602,10 @@ public class CoursesController : Controller
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> Catalog()
+    public async Task<IActionResult> Catalog(int page = 1)
     {
-        var items = await _courseService.GetCatalogAsync();
-        return View(items);
+        var model = await _courseService.GetCatalogAsync(page);
+        return View(model);
     }
 
     [Authorize(Policy = "CanViewCourse")]

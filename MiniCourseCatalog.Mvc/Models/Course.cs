@@ -14,6 +14,8 @@ public class Course : IAuditable, ISoftDeletable
     [StringLength(200)]
     public string Name { get; set; } = "";
 
+    public string? Description { get; set; }
+
     [Required]
     [StringLength(100)]
     public string Instructor { get; set; } = "";
@@ -43,4 +45,7 @@ public class Course : IAuditable, ISoftDeletable
     public CourseCategory CourseCategory { get; set; } = null!;
 
     public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public ICollection<CourseReview> CourseReviews { get; set; } = new List<CourseReview>();
+
+    public double AverageRating => CourseReviews.Any() ? CourseReviews.Average(r => r.Rating) : 0;
 }

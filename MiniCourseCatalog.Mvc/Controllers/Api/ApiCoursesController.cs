@@ -17,7 +17,7 @@ public class ApiCoursesController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string? keyword)
+    public async Task<IActionResult> Search([FromQuery(Name = "q")] string? keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword) || keyword.Length > 100)
         {
@@ -46,22 +46,8 @@ public class ApiCoursesController : ControllerBase
                 c.StartDate,
                 c.ThumbnailPath
             })
+            .Take(10)
             .ToListAsync();
-
-        if (!courses.Any())
-        {
-            var problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = "Không tìm thấy dữ liệu.",
-                Detail = $"Không có khóa học nào khớp với từ khóa '{keyword}'.",
-                Instance = HttpContext.Request.Path
-            };
-            problemDetails.Extensions["errorCode"] = "COURSE_SEARCH_EMPTY";
-            problemDetails.Extensions["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
-
-            return NotFound(problemDetails);
-        }
 
         return Ok(courses);
     }

@@ -49,7 +49,26 @@ public class AuditLogsController : Controller
             query = query.Where(a => a.CreatedAt.Date <= model.ToDate.Value.Date);
         }
 
-        model.Logs = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
+        model.ToDate = model.ToDate?.Date.AddDays(1).AddTicks(-1);
+
+        int pageSize = 20;
+        int page = HttpContext.Request.Query.ContainsKey("page") && int.TryParse(HttpContext.Request.Query["page"], out int p) ? p : 1;
+
+        var totalItems = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        var logs = await query.OrderByDescending(a => a.CreatedAt)
+                              .Skip((page - 1) * pageSize)
+                              .Take(pageSize)
+                              .ToListAsync();
+
+        model.Logs = new PaginationViewModel<MiniCourseCatalog.Mvc.Models.AuditLog>
+        {
+            Items = logs,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
         return View(model);
     }

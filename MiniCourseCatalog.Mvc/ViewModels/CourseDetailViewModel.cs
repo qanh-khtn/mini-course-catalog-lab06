@@ -34,4 +34,8 @@ public class CourseDetailViewModel
             return "Sĩ số đang ở mức ổn định, tiếp tục tuyển sinh bình thường.";
         }
     }
+
+    public double AverageRating { get; set; }
+    public int ReviewCount { get; set; }
+    public List<Models.CourseReview> Reviews { get; set; } = new List<Models.CourseReview>();
 }

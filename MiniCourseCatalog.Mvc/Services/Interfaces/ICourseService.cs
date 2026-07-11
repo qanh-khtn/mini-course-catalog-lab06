@@ -56,5 +56,9 @@ public interface ICourseService
     Task<string> ExportCoursesCsvAsync();
 
     // --- Lab06: Catalog công khai (AllowAnonymous) ---
-    Task<List<CourseCatalogItemViewModel>> GetCatalogAsync();
+    Task<PaginationViewModel<CourseCatalogItemViewModel>> GetCatalogAsync(int page = 1, int pageSize = 6);
+
+    // --- Lab06: B3 Reviews & Ratings ---
+    Task<bool> AddReviewAsync(int courseId, string userId, int rating, string comment);
+    Task<List<CourseReview>> GetReviewsAsync(int courseId);
 }

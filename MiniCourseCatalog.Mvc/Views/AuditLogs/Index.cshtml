@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div class="card shadow-sm rounded-4 p-4 mb-4">
+    <div class="border-top pt-4 pb-2 mb-4">
         <form method="get" class="row g-3">
             <div class="col-md-3">
                 <label asp-for="User" class="form-label fw-bold"></label>
@@ -46,12 +46,12 @@
         </form>
     </div>
 
-    <div class="card shadow-sm rounded-4 p-0 overflow-hidden">
-        @if (Model.Logs.Any())
+    <div class="border-top pt-3">
+        @if (Model.Logs.TotalItems > 0)
         {
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th>Thời gian (UTC)</th>
                             <th>Action</th>
@@ -63,7 +63,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var log in Model.Logs)
+                        @foreach (var log in Model.Logs.Items)
                         {
                             <tr>
                                 <td>@log.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
@@ -90,13 +90,34 @@
                     </tbody>
                 </table>
             </div>
+
+            @if (Model.Logs.TotalPages > 1)
+            {
+                <div class="d-flex justify-content-center p-3 border-top">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0 gap-2">
+                            @for (int i = 1; i <= Model.Logs.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.Logs.CurrentPage ? "active" : "")">
+                                    <a class="page-link rounded-circle border-0 d-flex align-items-center justify-content-center fw-bold"
+                                       style="width: 32px; height: 32px; @(i == Model.Logs.CurrentPage ? "background: var(--accent); color: white;" : "color: var(--text-muted);")"
+                                       asp-action="Index" 
+                                       asp-route-User="@Model.User" 
+                                       asp-route-ActionName="@Model.ActionName"
+                                       asp-route-Result="@Model.Result"
+                                       asp-route-FromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                                       asp-route-ToDate="@Model.ToDate?.ToString("yyyy-MM-dd")"
+                                       asp-route-page="@i">@i</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
         }
         else
         {
-            <div class="p-5 text-center text-muted">
-                <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
-                <p class="mb-0">Không có bản ghi phù hợp.</p>
-            </div>
+            <partial name="~/Views/Shared/_EmptyState.cshtml" model='@("Không có bản ghi phù hợp.")' />
         }
     </div>
 </div>

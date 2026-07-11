@@ -1,4 +1,4 @@
-﻿@model CourseDetailViewModel
+@model CourseDetailViewModel
 @{
     ViewData["Title"] = "Chi Tiết Khóa Học";
 
@@ -131,6 +131,108 @@
                     <i class="bi bi-arrow-left me-2"></i>Về danh sách
                 </a>
             </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="fw-bold text-muted text-uppercase mb-0" style="letter-spacing:.05em;font-size:.75rem;">
+                    <i class="bi bi-star me-2"></i>Đánh giá từ học viên
+                </h6>
+                @if (Model.ReviewCount > 0)
+                {
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-5 fw-bold text-dark">@Model.AverageRating.ToString("0.0")</span>
+                        <div class="text-warning">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi @(i <= Math.Round(Model.AverageRating) ? "bi-star-fill" : "bi-star")"></i>
+                            }
+                        </div>
+                        <span class="text-muted small">(@Model.ReviewCount đánh giá)</span>
+                    </div>
+                }
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-action="AddReview" method="post" class="mb-4 pb-4 border-bottom">
+                    <input type="hidden" name="courseId" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Đánh giá của bạn</label>
+                        <div class="rating-input d-flex gap-2 text-warning fs-5">
+                            <div class="form-check form-check-inline m-0 p-0">
+                                <input type="radio" class="btn-check" name="rating" id="rating5" value="5" autocomplete="off" checked>
+                                <label class="btn btn-outline-warning border-0 p-1" for="rating5"><i class="bi bi-star-fill"></i> 5</label>
+                            </div>
+                            <div class="form-check form-check-inline m-0 p-0">
+                                <input type="radio" class="btn-check" name="rating" id="rating4" value="4" autocomplete="off">
+                                <label class="btn btn-outline-warning border-0 p-1" for="rating4"><i class="bi bi-star-fill"></i> 4</label>
+                            </div>
+                            <div class="form-check form-check-inline m-0 p-0">
+                                <input type="radio" class="btn-check" name="rating" id="rating3" value="3" autocomplete="off">
+                                <label class="btn btn-outline-warning border-0 p-1" for="rating3"><i class="bi bi-star-fill"></i> 3</label>
+                            </div>
+                            <div class="form-check form-check-inline m-0 p-0">
+                                <input type="radio" class="btn-check" name="rating" id="rating2" value="2" autocomplete="off">
+                                <label class="btn btn-outline-warning border-0 p-1" for="rating2"><i class="bi bi-star-fill"></i> 2</label>
+                            </div>
+                            <div class="form-check form-check-inline m-0 p-0">
+                                <input type="radio" class="btn-check" name="rating" id="rating1" value="1" autocomplete="off">
+                                <label class="btn btn-outline-warning border-0 p-1" for="rating1"><i class="bi bi-star-fill"></i> 1</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label small fw-bold">Nhận xét (không bắt buộc)</label>
+                        <textarea class="form-control bg-light border-0" id="comment" name="comment" rows="2" placeholder="Chia sẻ cảm nhận của bạn về khóa học..."></textarea>
+                    </div>
+                    <button type="submit" class="btn app-btn app-btn-primary fw-bold px-4">Gửi đánh giá</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert bg-light border-0 text-center mb-4 rounded-4">
+                    <a asp-controller="Account" asp-action="Login" class="fw-bold">Đăng nhập</a> để gửi đánh giá khóa học.
+                </div>
+            }
+
+            @if (Model.Reviews.Any())
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="d-flex gap-3">
+                            <div class="avatar bg-secondary-subtle text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                @(review.User?.FullName?.FirstOrDefault().ToString() ?? review.User?.UserName?.FirstOrDefault().ToString() ?? "U")
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="fw-bold">@(review.User?.FullName ?? review.User?.UserName ?? "Học viên ẩn danh")</div>
+                                    <div class="text-muted small">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                                <div class="text-warning small mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(review.Comment))
+                                {
+                                    <p class="mb-0 text-dark small">@review.Comment</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-chat-square-text fs-1 mb-2 text-secondary opacity-50"></i>
+                    <p class="mb-0 small">Chưa có đánh giá nào cho khóa học này.</p>
+                </div>
+            }
         </div>
     </div>
 </div>

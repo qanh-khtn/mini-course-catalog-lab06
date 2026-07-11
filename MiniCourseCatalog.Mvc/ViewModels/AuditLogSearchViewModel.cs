@@ -24,5 +24,5 @@ public class AuditLogSearchViewModel
     [DataType(DataType.Date)]
     public DateTime? ToDate { get; set; }
 
-    public List<AuditLog> Logs { get; set; } = new();
+    public PaginationViewModel<AuditLog> Logs { get; set; } = new();
 }

@@ -35,7 +35,7 @@ public class CourseServiceTests
             LowSeatThreshold = lowSeatThreshold,
             CenterName = "Test Center"
         });
-        return new CourseService(courseRepo, categoryRepo, options);
+        return new CourseService(courseRepo, categoryRepo, new FakeCourseReviewRepository(), options);
     }
 
     [Fact]
@@ -128,6 +128,7 @@ public class CourseServiceTests
         var service = new CourseService(
             courseRepo,
             new FakeCourseCategoryRepository(),
+            new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
         var newCourse = MakeCourse(0, "NEW-001", "Khóa mới", "GV Mới", 1_500_000, 0, 25, CatIT);
 
@@ -148,7 +149,7 @@ public class CourseServiceTests
         // Arrange
         var course = MakeCourse(1, "PRG-201", "OOP C#", "Cô Hoa", 2_000_000, 10, 20, CatIT);
         var courseRepo = new FakeCourseRepository(new[] { course });
-        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(),
+        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(), new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
 
         // Act
@@ -182,7 +183,7 @@ public class CourseServiceTests
         course.IsDeleted = true;
         course.DeletedAt = DateTime.Now.AddDays(-1);
         var courseRepo = new FakeCourseRepository(new[] { course });
-        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(),
+        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(), new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
 
         // Act
@@ -204,7 +205,7 @@ public class CourseServiceTests
         var course = MakeCourse(1, "PRG-201", "OOP C#", "Cô Hoa", 2_000_000, 10, 20, CatIT);
         course.RowVersion = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
         var courseRepo = new FakeCourseRepository(new[] { course });
-        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(),
+        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(), new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
 
         var vm = new MiniCourseCatalog.Mvc.ViewModels.CourseAdjustSeatsViewModel
@@ -230,7 +231,7 @@ public class CourseServiceTests
         var course = MakeCourse(1, "PRG-201", "OOP C#", "Cô Hoa", 2_000_000, 10, 20, CatIT);
         course.RowVersion = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
         var courseRepo = new FakeCourseRepository(new[] { course });
-        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(),
+        var service = new CourseService(courseRepo, new FakeCourseCategoryRepository(), new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
 
         var vm = new MiniCourseCatalog.Mvc.ViewModels.CourseAdjustSeatsViewModel
@@ -255,7 +256,7 @@ public class CourseServiceTests
         var course = MakeCourse(1, "PRG-201", "OOP C#", "Cô Hoa", 2_000_000, 10, 20, CatIT);
         course.RowVersion = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
         var throwingRepo = new ThrowingCourseRepository(new[] { course });
-        var service = new CourseService(throwingRepo, new FakeCourseCategoryRepository(),
+        var service = new CourseService(throwingRepo, new FakeCourseCategoryRepository(), new FakeCourseReviewRepository(),
             Microsoft.Extensions.Options.Options.Create(new TrainingCenterConfig()));
 
         var vm = new MiniCourseCatalog.Mvc.ViewModels.CourseAdjustSeatsViewModel

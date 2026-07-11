@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<CourseReview> CourseReviews => Set<CourseReview>();
 
     // Giá trị RowVersion cố định cho seed data (SQLite không tự sinh rowversion).
     private static byte[] SeedRowVersion(int id) => new byte[] { 0, 0, 0, 0, 0, 0, 0, (byte)id };
@@ -50,6 +51,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         // CourseCode là mã định danh nghiệp vụ duy nhất
         modelBuilder.Entity<Course>()
             .HasIndex(c => c.Code)
+            .IsUnique();
+
+        // Một User chỉ được review 1 Course một lần
+        modelBuilder.Entity<CourseReview>()
+            .HasIndex(r => new { r.CourseId, r.UserId })
             .IsUnique();
 
         // Optimistic concurrency cho luồng Enroll: UPDATE chỉ thành công khi Version chưa đổi
