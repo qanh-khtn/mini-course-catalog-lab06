@@ -21,13 +21,10 @@ public class ApiCoursesController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(keyword) || keyword.Length > 100)
         {
-            var problemDetails = new ValidationProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Yêu cầu không hợp lệ.",
-                Detail = "Từ khóa tìm kiếm không được rỗng và tối đa 100 ký tự."
-            };
-            return BadRequest(problemDetails);
+            ModelState.AddModelError(nameof(keyword), "Từ khóa tìm kiếm không được rỗng và tối đa 100 ký tự.");
+            // ValidationProblem() (thay vì BadRequest(new ValidationProblemDetails{...})) đi qua
+            // IProblemDetailsService nên traceId/timestamp được CustomizeProblemDetails tự thêm.
+            return ValidationProblem(statusCode: StatusCodes.Status400BadRequest, title: "Yêu cầu không hợp lệ.", modelStateDictionary: ModelState);
         }
 
         var keywordLower = keyword.Trim().ToLower();
@@ -51,12 +48,14 @@ public class ApiCoursesController : ControllerBase
 
         if (!courses.Any())
         {
-            return NotFound(new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = "Không tìm thấy khóa học",
-                Detail = "Không có khóa học nào khớp với từ khóa tìm kiếm."
-            });
+            // Problem() (thay vì NotFound(new ProblemDetails{...})) đi qua IProblemDetailsService
+            // nên traceId/timestamp được CustomizeProblemDetails tự thêm, giống endpoint /api/courses/{id}.
+            return Problem(
+                title: "Không tìm thấy khóa học",
+                detail: "Không có khóa học nào khớp với từ khóa tìm kiếm.",
+                statusCode: StatusCodes.Status404NotFound,
+                instance: $"/api/courses/search?q={keyword}",
+                extensions: new Dictionary<string, object?> { ["errorCode"] = "COURSE_SEARCH_EMPTY" });
         }
 
         return Ok(courses);
