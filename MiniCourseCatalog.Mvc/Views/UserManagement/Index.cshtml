@@ -1,0 +1,77 @@
+@model IEnumerable<MiniCourseCatalog.Mvc.ViewModels.UserManagementViewModel>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    var currentUserName = User.Identity?.Name;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold mb-0">
+        <i class="bi bi-people text-primary me-2"></i>Phân quyền tài khoản
+    </h1>
+</div>
+
+<div class="table-responsive rounded-3 shadow-sm border overflow-hidden">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="ps-4">Tài khoản</th>
+                <th>Phòng ban</th>
+                <th>Role hiện tại</th>
+                <th class="pe-4 text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody class="border-top-0">
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-5">
+                        <partial name="_EmptyState" model="@("Không có tài khoản nào trong hệ thống.")" />
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var user in Model)
+                {
+                    var isSelf = string.Equals(user.Email, currentUserName, StringComparison.OrdinalIgnoreCase);
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold">@user.FullName</div>
+                            <div class="small text-muted">@user.Email</div>
+                        </td>
+                        <td>
+                            <span class="text-muted">@(string.IsNullOrEmpty(user.Department) ? "Không có" : user.Department)</span>
+                        </td>
+                        <td>
+                            @if (user.CurrentRole == "Admin")
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">Admin</span>
+                            }
+                            else if (user.CurrentRole == "Staff")
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">Staff</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1 rounded-pill">User</span>
+                            }
+                        </td>
+                        <td class="pe-4 text-end">
+                            <form asp-action="ChangeRole" method="post" class="d-flex align-items-center justify-content-end gap-2 m-0 p-0">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <select name="newRole" class="form-select form-select-sm" style="width: 120px;" @(isSelf ? "disabled" : "")>
+                                    @if (user.CurrentRole == "Admin") { <option value="Admin" selected>Admin</option> } else { <option value="Admin">Admin</option> }
+                                    @if (user.CurrentRole == "Staff") { <option value="Staff" selected>Staff</option> } else { <option value="Staff">Staff</option> }
+                                    @if (user.CurrentRole == "User")  { <option value="User" selected>User</option> } else { <option value="User">User</option> }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" @(isSelf ? "disabled" : "")>
+                                    Cập nhật
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

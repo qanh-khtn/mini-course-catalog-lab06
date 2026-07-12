@@ -111,6 +111,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("CanViewAuditLog", policy => policy.RequireRole("Admin"));
     options.AddPolicy("CanUploadCourseThumbnail", policy => policy.RequireRole("Admin"));
     options.AddPolicy("CanEnrollCourse", policy => policy.RequireAuthenticatedUser());
+    options.AddPolicy("CanManageUsers", policy => policy.RequireRole("Admin"));
 });
 
 // Health Checks: liveness (process còn sống) + readiness (có kiểm tra database)
