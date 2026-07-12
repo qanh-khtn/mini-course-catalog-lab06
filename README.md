@@ -2,7 +2,7 @@
 
 > **Final Mini Project** tích hợp Lab01–Lab05 + ASP.NET Core Identity + Authorization (Policy & Role) + Security Pack (Anti-Forgery, XSS, SQLi, Safe Upload, Audit Log, Health Check, ProblemDetails).
 >
-> Branch: `lab06-final-secure-course-center`
+> Do phạm vi Lab06 Final mở rộng đáng kể so với Lab05 (Identity, Authorization, Security Pack), dự án được tách thành **repository riêng** thay vì tiếp tục trên repo Lab05. Nhánh làm việc: `main`.
 
 ---
 
