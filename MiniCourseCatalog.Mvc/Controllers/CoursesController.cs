@@ -33,7 +33,7 @@ public class CoursesController : Controller
     [Authorize(Policy = "CanViewCourse")]
     public async Task<IActionResult> Index(string keyword = "", string category = "", int page = 1)
     {
-
+        page = Math.Max(1, page);
         var rawCourses = await _courseService.GetAllAsync();
         var categories = rawCourses
             .Select(c => c.CourseCategory.Name)
@@ -125,12 +125,25 @@ public class CoursesController : Controller
     [HttpPost]
     [Authorize(Policy = "CanEnrollCourse")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddReview(int courseId, int rating, string comment)
+    public async Task<IActionResult> AddReview(AddReviewViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage;
+            TempData["ErrorMessage"] = firstError ?? "Dữ liệu đánh giá không hợp lệ.";
+            return RedirectToAction(nameof(Detail), new { id = model.CourseId });
+        }
+
+        var course = await _courseService.GetByIdAsync(model.CourseId);
+        if (course == null)
+        {
+            return NotFound();
+        }
+
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return Unauthorized();
 
-        var success = await _courseService.AddReviewAsync(courseId, userId, rating, comment);
+        var success = await _courseService.AddReviewAsync(model.CourseId, userId, model.Rating, model.Comment ?? string.Empty);
         if (!success)
         {
             TempData["ErrorMessage"] = "Bạn đã đánh giá khóa học này rồi.";
@@ -140,7 +153,7 @@ public class CoursesController : Controller
             TempData["SuccessMessage"] = "Đánh giá của bạn đã được gửi thành công!";
         }
 
-        return RedirectToAction(nameof(Detail), new { id = courseId });
+        return RedirectToAction(nameof(Detail), new { id = model.CourseId });
     }
 
     [HttpPost]
@@ -163,7 +176,11 @@ public class CoursesController : Controller
         {
             TempData["ErrorMessage"] = "Không tìm thấy đánh giá.";
         }
-        return Redirect(Request.Headers["Referer"].ToString());
+        
+        var referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer) && Url.IsLocalUrl(referer))
+            return Redirect(referer);
+        return RedirectToAction(nameof(Index));
     }
 
     [Authorize(Policy = "CanViewCourse")]

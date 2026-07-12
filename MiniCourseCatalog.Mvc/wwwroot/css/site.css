@@ -1495,3 +1495,10 @@ body.theme-animating .progress {
     background: rgba(255, 255, 255, 0.04) !important;
 }
 
+/* ---- Smooth Page Theme Crossfade Transitions ---- */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+

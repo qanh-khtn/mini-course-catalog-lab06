@@ -73,12 +73,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o => {
 // đoán trúng email tồn tại hay không — hai lớp phòng thủ bổ trợ nhau).
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("login", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 5;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueLimit = 0;
-    });
+    options.AddPolicy("login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 
     options.OnRejected = async (context, cancellationToken) =>
     {
@@ -90,6 +93,9 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.ConfigureApplicationCookie(o => {
+    o.Cookie.HttpOnly = true;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    o.Cookie.SameSite = SameSiteMode.Lax;
     o.LoginPath = "/Account/Login";
     o.AccessDeniedPath = "/Account/AccessDenied";
     o.ExpireTimeSpan = TimeSpan.FromHours(2);

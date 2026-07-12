@@ -53,6 +53,7 @@ public class AuditLogsController : Controller
 
         int pageSize = 20;
         int page = HttpContext.Request.Query.ContainsKey("page") && int.TryParse(HttpContext.Request.Query["page"], out int p) ? p : 1;
+        page = Math.Max(1, page);
 
         var totalItems = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);

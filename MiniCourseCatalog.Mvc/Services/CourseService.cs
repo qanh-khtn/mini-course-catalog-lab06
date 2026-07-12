@@ -208,12 +208,10 @@ public class CourseService : ICourseService
         course.CurrentEnrollment = viewModel.CurrentEnrollment;
         course.MaxCapacity = viewModel.MaxCapacity;
         course.StartDate = viewModel.StartDate;
-        
-        // Update ThumbnailPath if changed
-        if (viewModel.ExistingThumbnailPath != course.ThumbnailPath)
-        {
-            course.ThumbnailPath = viewModel.ExistingThumbnailPath;
-        }
+
+        // ThumbnailPath KHÔNG được ghi ở đây — chỉ UploadThumbnail (qua UpdateThumbnailAsync)
+        // được phép đổi đường dẫn ảnh, để chống overposting (ExistingThumbnailPath là hidden
+        // field trong form Edit, có thể bị giả mạo thành đường dẫn tùy ý nếu bind trực tiếp).
 
         // So phiên bản user thấy lúc mở form với phiên bản hiện tại trong DB
         byte[] originalRowVersion;
