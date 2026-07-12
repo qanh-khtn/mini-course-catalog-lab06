@@ -75,98 +75,119 @@
                                 Danh mục
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Courses","Index")"
-                               asp-controller="Courses" asp-action="Index">
-                                Khóa học
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="@NavCls("Courses","Enroll")"
-                               asp-controller="Courses" asp-action="Enroll">
-                                Đăng ký
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-uppercase small fw-medium dropdown-toggle @(ctrl is "CourseCategories" or "DataHealth" or "Enrollments" or "AuditLogs" ? "active fw-bold" : (IsActive("Courses","Stats") || IsActive("Courses","Search") || IsActive("Courses","Filter") || IsActive("Courses","AuditLog") ? "active fw-bold" : ""))"
-                               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Quản trị
-                            </a>
-                            <ul class="dropdown-menu rounded-3 shadow-sm border-0 mt-2">
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Stats">
-                                        <i class="bi bi-bar-chart me-2 text-primary"></i>Thống kê
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Search">
-                                        <i class="bi bi-search me-2 text-primary"></i>Tìm kiếm
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Filter">
-                                        <i class="bi bi-funnel me-2 text-primary"></i>Lọc
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="CourseCategories" asp-action="Index">
-                                        <i class="bi bi-diagram-3 me-2 text-primary"></i>Chuyên ngành
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Enrollments" asp-action="History">
-                                        <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử đăng ký
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="Trash">
-                                        <i class="bi bi-trash me-2 text-primary"></i>Thùng rác
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="Courses" asp-action="AuditLog">
-                                        <i class="bi bi-journal-text me-2 text-primary"></i>Audit Log (Course)
-                                    </a>
-                                </li>
-                                @if (User.IsInRole("Admin"))
-                                {
+                        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                        {
+                            <li class="nav-item">
+                                <a class="@NavCls("Courses","Index")"
+                                   asp-controller="Courses" asp-action="Index">
+                                    Khóa học
+                                </a>
+                            </li>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="@NavCls("Courses","Enroll")"
+                                   asp-controller="Courses" asp-action="Enroll">
+                                    Đăng ký
+                                </a>
+                            </li>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link text-uppercase small fw-medium dropdown-toggle @(ctrl is "CourseCategories" or "DataHealth" or "Enrollments" or "AuditLogs" ? "active fw-bold" : (IsActive("Courses","Stats") || IsActive("Courses","Search") || IsActive("Courses","Filter") || IsActive("Courses","AuditLog") ? "active fw-bold" : ""))"
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Quản trị
+                                </a>
+                                <ul class="dropdown-menu rounded-3 shadow-sm border-0 mt-2">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Courses" asp-action="Stats">
+                                                <i class="bi bi-bar-chart me-2 text-primary"></i>Thống kê
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Courses" asp-action="Search">
+                                                <i class="bi bi-search me-2 text-primary"></i>Tìm kiếm
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Courses" asp-action="Filter">
+                                                <i class="bi bi-funnel me-2 text-primary"></i>Lọc
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
                                     <li>
-                                        <a class="dropdown-item small" asp-controller="AuditLogs" asp-action="Index">
-                                            <i class="bi bi-shield-lock me-2 text-primary"></i>Nhật ký bảo mật
+                                        <a class="dropdown-item small" asp-controller="CourseCategories" asp-action="Index">
+                                            <i class="bi bi-diagram-3 me-2 text-primary"></i>Chuyên ngành
+                                        </a>
+                                    </li>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Enrollments" asp-action="History">
+                                                <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử đăng ký
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Courses" asp-action="Trash">
+                                                <i class="bi bi-trash me-2 text-primary"></i>Thùng rác
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="Courses" asp-action="AuditLog">
+                                                <i class="bi bi-journal-text me-2 text-primary"></i>Audit Log (Course)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="AuditLogs" asp-action="Index">
+                                                <i class="bi bi-shield-lock me-2 text-primary"></i>Nhật ký bảo mật
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="UserManagement" asp-action="Index">
+                                                <i class="bi bi-people me-2 text-primary"></i>Quản lý người dùng
+                                            </a>
+                                        </li>
+                                    }
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item small" href="/health/ready" target="_blank">
+                                            <i class="bi bi-heart-pulse me-2 text-primary"></i>Health Check
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item small" asp-controller="UserManagement" asp-action="Index">
-                                            <i class="bi bi-people me-2 text-primary"></i>Quản lý người dùng
+                                        <a class="dropdown-item small" href="/api/courses/9999" target="_blank">
+                                            <i class="bi bi-braces me-2 text-primary"></i>API Error Demo
                                         </a>
                                     </li>
-                                }
-                                <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    <a class="dropdown-item small" href="/health/ready" target="_blank">
-                                        <i class="bi bi-heart-pulse me-2 text-primary"></i>Health Check
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" href="/api/courses/9999" target="_blank">
-                                        <i class="bi bi-braces me-2 text-primary"></i>API Error Demo
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item small" asp-controller="DataHealth" asp-action="Index">
-                                        <i class="bi bi-database-check me-2 text-primary"></i>DB Health
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item ms-sm-2">
-                            <a class="nav-link nav-cta"
-                               asp-controller="Courses" asp-action="Create">
-                                <i class="bi bi-plus-lg me-1"></i>Thêm mới
-                            </a>
-                        </li>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item small" asp-controller="DataHealth" asp-action="Index">
+                                                <i class="bi bi-database-check me-2 text-primary"></i>DB Health
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item ms-sm-2">
+                                <a class="nav-link nav-cta"
+                                   asp-controller="Courses" asp-action="Create">
+                                    <i class="bi bi-plus-lg me-1"></i>Thêm mới
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav align-items-center flex-row">

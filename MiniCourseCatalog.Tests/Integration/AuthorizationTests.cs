@@ -129,6 +129,79 @@ public class AuthorizationTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Contains("errorCode", json);
         Assert.Contains("traceId", json);
     }
+
+    [Fact]
+    public async Task Anonymous_GetCourseDetail_Ok()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var response = await client.GetAsync("/Courses/Detail/1");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Anonymous_GetCourseCategories_RedirectsToLogin()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var response = await client.GetAsync("/CourseCategories");
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.StartsWith("/Account/Login", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task AuthenticatedUser_GetCourseCategories_Ok()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add("TestUser", "Student");
+        var response = await client.GetAsync("/CourseCategories");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Student_GetEnrollmentHistory_AccessDenied()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add("TestUser", "Student");
+        var response = await client.GetAsync("/Enrollments/History");
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.StartsWith("/Account/AccessDenied", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task Staff_GetEnrollmentHistory_Ok()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add("TestUser", "Staff");
+        var response = await client.GetAsync("/Enrollments/History");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Anonymous_GetDataHealth_RedirectsToLogin()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var response = await client.GetAsync("/DataHealth");
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.StartsWith("/Account/Login", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task Staff_GetDataHealth_AccessDenied()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add("TestUser", "Staff");
+        var response = await client.GetAsync("/DataHealth");
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.StartsWith("/Account/AccessDenied", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task Admin_GetDataHealth_Ok()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add("TestUser", "Admin");
+        var response = await client.GetAsync("/DataHealth");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }
 
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniCourseCatalog.Mvc.Services.Interfaces;
 
@@ -12,6 +13,7 @@ public class EnrollmentsController : Controller
         _enrollmentService = enrollmentService;
     }
 
+    [Authorize(Policy = "CanViewCourse")]
     public async Task<IActionResult> History()
     {
         var enrollments = await _enrollmentService.GetAllEnrollmentsAsync();

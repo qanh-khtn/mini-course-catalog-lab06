@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniCourseCatalog.Mvc.Data;
@@ -16,6 +17,7 @@ public class DataHealthController : Controller
         _configuration = configuration;
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
         var vm = new DataHealthViewModel

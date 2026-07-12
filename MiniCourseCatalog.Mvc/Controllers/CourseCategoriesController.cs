@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniCourseCatalog.Mvc.Services.Interfaces;
 using MiniCourseCatalog.Mvc.ViewModels;
@@ -13,6 +14,7 @@ public class CourseCategoriesController : Controller
         _courseService = courseService;
     }
 
+    [Authorize]
     public async Task<IActionResult> Index()
     {
         var categories = await _courseService.GetCourseCategoriesAsync();

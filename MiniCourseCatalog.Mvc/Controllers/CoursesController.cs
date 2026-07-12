@@ -91,7 +91,7 @@ public class CoursesController : Controller
         return View(viewModel);
     }
 
-    [Authorize(Policy = "CanViewCourse")]
+    [AllowAnonymous]
     public async Task<IActionResult> Detail(int id)
     {
 

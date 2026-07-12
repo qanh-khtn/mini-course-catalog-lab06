@@ -15,10 +15,20 @@
             <h1 class="page-title">@Model.Name</h1>
             <p class="page-description">@Model.Category</p>
         </div>
-        <a class="btn app-btn app-btn-ghost fw-bold px-4"
-           asp-controller="Courses" asp-action="Index">
-            <i class="bi bi-arrow-left me-2"></i>Quay lại
-        </a>
+        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+        {
+            <a class="btn app-btn app-btn-ghost fw-bold px-4"
+               asp-controller="Courses" asp-action="Index">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        }
+        else
+        {
+            <a class="btn app-btn app-btn-ghost fw-bold px-4"
+               asp-controller="Courses" asp-action="Catalog">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        }
     </div>
 
     <div class="row g-4 align-items-start">
@@ -108,28 +118,43 @@
                 <div class="fw-extrabold" style="font-size:1.6rem;color:#059669;">@Model.TuitionFeeText</div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 side-card info">
-                <div class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing:.05em;font-size:.72rem;">
-                    <i class="bi bi-wallet2 me-1"></i>Doanh thu hiện tại
+            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+            {
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 side-card info">
+                    <div class="text-muted small text-uppercase fw-bold mb-1" style="letter-spacing:.05em;font-size:.72rem;">
+                        <i class="bi bi-wallet2 me-1"></i>Doanh thu hiện tại
+                    </div>
+                    <div class="fw-extrabold text-primary" style="font-size:1.6rem;">@Model.TotalRevenueText</div>
+                    <div class="text-muted small mt-1">Dựa trên @Model.CurrentEnrollment học viên × @Model.TuitionFeeText</div>
                 </div>
-                <div class="fw-extrabold text-primary" style="font-size:1.6rem;">@Model.TotalRevenueText</div>
-                <div class="text-muted small mt-1">Dựa trên @Model.CurrentEnrollment học viên × @Model.TuitionFeeText</div>
-            </div>
 
-            <div class="card border-0 shadow-sm rounded-4 p-4 side-card warning">
-                <div class="text-muted small text-uppercase fw-bold mb-2" style="letter-spacing:.05em;font-size:.72rem;">
-                    <i class="bi bi-lightbulb me-1"></i>Gợi ý vận hành
+                <div class="card border-0 shadow-sm rounded-4 p-4 side-card warning">
+                    <div class="text-muted small text-uppercase fw-bold mb-2" style="letter-spacing:.05em;font-size:.72rem;">
+                        <i class="bi bi-lightbulb me-1"></i>Gợi ý vận hành
+                    </div>
+                    <div class="small text-dark">@Model.OperationalSuggestion</div>
                 </div>
-                <div class="small text-dark">@Model.OperationalSuggestion</div>
-            </div>
+            }
 
             <div class="mt-3 d-flex flex-column gap-2">
-                <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
-                    <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
-                </a>
-                <a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-ghost fw-bold px-4">
-                    <i class="bi bi-arrow-left me-2"></i>Về danh sách
-                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
+                        <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
+                    </a>
+                }
+                @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                {
+                    <a asp-controller="Courses" asp-action="Index" class="btn app-btn app-btn-ghost fw-bold px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Về danh sách
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Courses" asp-action="Catalog" class="btn app-btn app-btn-ghost fw-bold px-4">
+                        <i class="bi bi-arrow-left me-2"></i>Về danh mục
+                    </a>
+                }
             </div>
         </div>
 
@@ -193,7 +218,7 @@
             else
             {
                 <div class="alert border-0 text-center mb-4 rounded-4" style="background: var(--bg-surface-hover); color: var(--text-secondary);">
-                    <a asp-controller="Account" asp-action="Login" class="fw-bold text-primary text-decoration-none">Đăng nhập</a> để gửi đánh giá khóa học.
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="fw-bold text-primary text-decoration-none">Đăng nhập</a> để gửi đánh giá khóa học.
                 </div>
             }
 
