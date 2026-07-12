@@ -494,3 +494,8 @@ handoff_lab06.md
 handoff_lab06_actionplan.md
 handoff_lab06_bonus.md
 .agents/
+
+# Ảnh chụp màn hình dùng để biên soạn báo cáo (BaoCao_Lab06.tex) — chỉ dùng local,
+# không push lên repo vì trùng vai trò với chính file .tex đã gitignore ở trên.
+img/Lab06/
+docs/images/
