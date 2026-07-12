@@ -315,7 +315,7 @@ public class CoursesController : Controller
     }
 
     [HttpGet]
-    [Authorize(Policy = "CanEnrollCourse")]
+    [Authorize(Policy = "CanManageEnrollment")]
     public async Task<IActionResult> Enroll()
     {
 
@@ -325,7 +325,7 @@ public class CoursesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Policy = "CanEnrollCourse")]
+    [Authorize(Policy = "CanManageEnrollment")]
     public async Task<IActionResult> Enroll(EnrollViewModel viewModel)
     {
 

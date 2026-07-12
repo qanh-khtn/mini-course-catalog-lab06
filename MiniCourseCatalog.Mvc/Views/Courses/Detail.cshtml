@@ -137,7 +137,7 @@
             }
 
             <div class="mt-3 d-flex flex-column gap-2">
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
                 {
                     <a asp-controller="Courses" asp-action="Enroll" class="btn app-btn app-btn-primary fw-bold px-4">
                         <i class="bi bi-person-plus me-2"></i>Đăng ký học viên
